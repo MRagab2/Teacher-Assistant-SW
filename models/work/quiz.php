@@ -1,7 +1,7 @@
 <?php
 require_once "question.php";
 
-class Quiz extends Question implements WorkFun{
+class Quiz extends Question{
 
     /*New Work Day*/
     public function new_workday(Class_Work $workday){}
@@ -11,4 +11,9 @@ class Quiz extends Question implements WorkFun{
 
     /*Delete Work Day*/
     public function delete_workday(Class_Work $workday){}
+
+    //view dates of quizzes
+    public function view_1_Class_Quizzes_Dates(){
+        
+    }
 }

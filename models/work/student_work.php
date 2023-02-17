@@ -1,354 +1,62 @@
 <?php
+require_once __DIR__."/../db_controller.php";
+require_once __DIR__."/../user/student.php";
 
-class Student_Work {
+class Student_Work extends DB_Controller{
 
     public $year;
-    public $type;
+    public $type;   //{quiz_grade , hw_grade , exam_grade , attendance}
     public $grade;
     public $date;
     public $center;
 
-    //new day
-    public function new_Student_Day(Student_Work $student_day){
-        $this->db = new DBController;
+    public function __construct(){
+        //Add from the database config file
+        global $config;
 
-        if($this->db->openConnection()){
-            switch($student->class){
-                case '3rd sec':
-                    $query = "alter table `3rd quizzes`
-                        ADD `$student->day` VARCHAR(5) 
-                        CHARACTER SET utf8 COLLATE utf8_general_ci NULL 
-                        AFTER `id`;";
-                    break;
-                case '2nd sec (Math)':
-                    switch($student->center){
-                        case 'Helwan':
-                            $query = "alter table `2nd helwan math quizzes`
-                                    ADD `$student->day` VARCHAR(5) 
-                                    CHARACTER SET utf8 COLLATE utf8_general_ci NULL 
-                                    AFTER `id`;";
-                            break;
-        
-                        case 'Mayo':
-                            $query = "alter table `2nd mayo math quizzes`
-                                    ADD `$student->day` VARCHAR(5) 
-                                    CHARACTER SET utf8 COLLATE utf8_general_ci NULL 
-                                    AFTER `id`;";
-                            break;
-                    }
-                    break;
-                    
-                case '2nd sec (Mech)':
-                    switch($student->center){
-                        case 'Helwan':
-                            $query = "alter table `2nd helwan mech quizzes`
-                                    ADD `$student->day` VARCHAR(5) 
-                                    CHARACTER SET utf8 COLLATE utf8_general_ci NULL 
-                                    AFTER `id`;";
-                            break;
-        
-                        case 'Mayo':
-                            $query = "alter table `2nd mayo mech quizzes`
-                                    ADD `$student->day` VARCHAR(5) 
-                                    CHARACTER SET utf8 COLLATE utf8_general_ci NULL 
-                                    AFTER `id`;";
-                            break;
-                    }
-                    break;
-                    
-                case '1st sec':
-                    switch($student->center){
-                        case 'Helwan':
-                            $query = "alter table `1st helwan quizzes`
-                                    ADD `$student->day` VARCHAR(5) 
-                                    CHARACTER SET utf8 COLLATE utf8_general_ci NULL 
-                                    AFTER `id`;";
-                            break;
-        
-                        case 'Mayo':
-                            $query = "alter table `1st mayo quizzes`
-                                    ADD `$student->day` VARCHAR(5) 
-                                    CHARACTER SET utf8 COLLATE utf8_general_ci NULL 
-                                    AFTER `id`;";
-                            break;
-                    }
-                    break;
-                    
-                default:
-                    echo 'error in class';
-            }
-            $result = $this->db->insert($query);
-
-            if($result != false){
-                $this->db->closeConnection();
-                return true;
-                
-            }
-            else {
-                $_SESSION["errMsg"] = "Somthing went wrong... try again later";
-                $this->db->closeConnection();
-                return false;
-            }
-        
-        }
-        else{
-            echo "Error in Database Connection";
-            return false;
-        }
+        //Call Paretn Constructor
+        parent::__construct($config);
     }
 
-    //edit day
-    public function edit_Student_Day(Student_Work $old_student_day, Student_Work $new_student_day){
-        $this->db = new DBController;
+    //new day 
+    public function new_Student_Day(){
+        $this->query("ALTER TABLE `".$this->year."_".$this->center."_".$this->type."`
+                        ADD `".$this->date."` FLOAT NULL AFTER `student_name`");
+    }
 
-        if($this->db->openConnection()){
-            switch($student->class){
-                case '3rd sec':
-                    $query = "alter table `3rd quizzes`
-                        ADD `$student->day` VARCHAR(5) 
-                        CHARACTER SET utf8 COLLATE utf8_general_ci NULL 
-                        AFTER `id`;";
-                    break;
-                case '2nd sec (Math)':
-                    switch($student->center){
-                        case 'Helwan':
-                            $query = "alter table `2nd helwan math quizzes`
-                                    ADD `$student->day` VARCHAR(5) 
-                                    CHARACTER SET utf8 COLLATE utf8_general_ci NULL 
-                                    AFTER `id`;";
-                            break;
-        
-                        case 'Mayo':
-                            $query = "alter table `2nd mayo math quizzes`
-                                    ADD `$student->day` VARCHAR(5) 
-                                    CHARACTER SET utf8 COLLATE utf8_general_ci NULL 
-                                    AFTER `id`;";
-                            break;
-                    }
-                    break;
-                    
-                case '2nd sec (Mech)':
-                    switch($student->center){
-                        case 'Helwan':
-                            $query = "alter table `2nd helwan mech quizzes`
-                                    ADD `$student->day` VARCHAR(5) 
-                                    CHARACTER SET utf8 COLLATE utf8_general_ci NULL 
-                                    AFTER `id`;";
-                            break;
-        
-                        case 'Mayo':
-                            $query = "alter table `2nd mayo mech quizzes`
-                                    ADD `$student->day` VARCHAR(5) 
-                                    CHARACTER SET utf8 COLLATE utf8_general_ci NULL 
-                                    AFTER `id`;";
-                            break;
-                    }
-                    break;
-                    
-                case '1st sec':
-                    switch($student->center){
-                        case 'Helwan':
-                            $query = "alter table `1st helwan quizzes`
-                                    ADD `$student->day` VARCHAR(5) 
-                                    CHARACTER SET utf8 COLLATE utf8_general_ci NULL 
-                                    AFTER `id`;";
-                            break;
-        
-                        case 'Mayo':
-                            $query = "alter table `1st mayo quizzes`
-                                    ADD `$student->day` VARCHAR(5) 
-                                    CHARACTER SET utf8 COLLATE utf8_general_ci NULL 
-                                    AFTER `id`;";
-                            break;
-                    }
-                    break;
-                    
-                default:
-                    echo 'error in class';
-            }
-            $result = $this->db->insert($query);
+    //edit day 
+    public function update_Student_Day(Student_Work $new_student_day){ 
 
-            if($result != false){
-                $this->db->closeConnection();
-                return true;
-                
-            }
-            else {
-                $_SESSION["errMsg"] = "Somthing went wrong... try again later";
-                $this->db->closeConnection();
-                return false;
-            }
-        
-        }
-        else{
-            echo "Error in Database Connection";
-            return false;
-        }
+        $this->query("ALTER TABLE `".$this->year."_".$this->center."_".$this->type."`
+                    CHANGE `".$this->date."` `".$new_student_day->date."` FLOAT NULL DEFAULT NULL;");
     }
 
     //add grades
-    public function add_All_Grades(Student_Work $student_day){
-        $this->db = new DBController;
-
-        if($this->db->openConnection()){
-            switch($student->class){
-                case '3rd sec':
-                    $query = "update `3rd quizzes` 
-                            set `$student->day`= '$student->grade'
-                            where `3rd quizzes`.`id` = '$student->id'";
-                    break;
-
-                case '2nd sec (Math)':
-                    switch($student->center){
-                        case 'Helwan':
-                            $query = "update `2nd helwan math quizzes` 
-                                    set `$student->day`= '$student->grade'
-                                    where `id` = '$student->id'";
-                            break;
-        
-                        case 'Mayo':
-                            $query = "update `2nd mayo math quizzes` 
-                                    set `$student->day`= '$student->grade'
-                                    where `id` = '$student->id'";
-                            break;
-                    }
-                    break;
-
-                case '2nd sec (Mech)':
-                    switch($student->center){
-                        case 'Helwan':
-                            $query = "update `2nd helwan mech quizzes` 
-                                    set `$student->day`= '$student->grade'
-                                    where `id` = '$student->id'";
-                            break;
-        
-                        case 'Mayo':
-                            $query = "update `2nd mayo mech quizzes` 
-                                    set `$student->day`= '$student->grade'
-                                    where `id` = '$student->id'";
-                            break;
-                    }
-                    break;
-
-                case '1st sec':
-                    switch($student->center){
-                        case 'Helwan':
-                            $query = "update `1st helwan quizzes` 
-                                set `$student->day`= '$student->grade'
-                                where `id` = '$student->id'";
-                            break;
-        
-                        case 'Mayo':
-                            $query = "update `1st mayo quizzes` 
-                                set `$student->day`= '$student->grade'
-                                where `id` = '$student->id'";
-                            break;
-                    }
-                    break;
-
-                default:
-                echo 'error in class';
-            }
-            
-            $result = $this->db->insert($query);
-        
-            if($result != false){
-                $this->db->closeConnection();
-            return true;
-            }
-            else {
-                $_SESSION["errMsg"] = "Somthing went wrong... try again later";
-                $this->db->closeConnection();
-                return false;
-            }
-        }
-        else{
-            echo "Error in Database Connection";
-            return false;
+    public function add_All_Grades($student_grades){
+        foreach($student_grades as $student){
+            $this->query("UPDATE `".$this->year."_".$this->center."_".$this->type."` 
+                        SET `".$this->date."` = ".$student["grade"]." 
+                        WHERE `student_id` = ".$student["id"]);
         }
     }
 
     //add 1 grades
-    public function add_1_grade(Student_Work $student_day, Student $student){
-
-    }
-
-    //edit 1 grades
-    public function edit_1_grade(Student_Work $student_day, Student $old_Student, Student $neW_Student){
-        
+    public function add_1_grade(Student $student){
+        $this->query("UPDATE `".$this->year."_".$this->center."_".$this->type."` 
+                    SET `".$this->date."` = ".$this->grade." 
+                    WHERE `student_id` = ".$student->id);
     }
 
     //drop student day
-    public function drop_Student_Day(Student_Work $student_day){
-        $this->db = new DBController;
+    public function drop_Student_Day(){
+        $this->query("ALTER TABLE `".$this->year."_".$this->center."_".$this->type."` 
+                    DROP `".$this->date."`;");
+    }
 
-        if($this->db->openConnection()){
-            switch($student->class){
-                case '3rd sec':
-                    $query = "alter table `3rd quizzes` 
-                        DROP `$student->day`;";
-                    break;
-                case '2nd sec (Math)':
-                    switch($student->center){
-                        case 'Helwan':
-                            $query = "alter table `2nd helwan math quizzes` 
-                                    DROP `$student->day`;";
-                            break;
-        
-                        case 'Mayo':
-                            $query = "alter table `2nd mayo math quizzes` 
-                                    DROP `$student->day`;";
-                            break;
-                    }
-                    break;
-
-                case '2nd sec (Mech)':
-                    switch($student->center){
-                        case 'Helwan':
-                            $query = "alter table `2nd helwan mech quizzes` 
-                                    DROP `$student->day`;";
-                            break;
-        
-                        case 'Mayo':
-                            $query = "alter table `2nd mayo mech quizzes` 
-                                    DROP `$student->day`;";
-                            break;
-                    }
-                    break;
-
-                case '1st sec':
-                    switch($student->center){
-                        case 'Helwan':
-                            $query = "alter table `1st helwan quizzes` 
-                                    DROP `$student->day`;";
-                            break;
-        
-                        case 'Mayo':
-                            $query = "alter table `1st mayo quizzes` 
-                                    DROP `$student->day`;";
-                            break;
-                    }
-                    break;
-                    
-                default:
-                    echo 'error in class';
-            }
-            $result = $this->db->delete($query);
-
-            if ($result != false) {
-                $this->db->closeConnection();
-                return true;
-            }
-            else {
-                $_SESSION["errMsg"] = "Somthing went wrong... try again later";
-                $this->db->closeConnection();
-                return false;
-            }
-        }
-        else{
-            echo "Error in Database Connection";
-            return false;
-        }
+    //view 1 class all quizzes
+    public function view_grades(){
+        $this->select("`".$this->year."_".$this->center."_".$this->type."`");
+        return $this->fetchAll();
     }
 
 }

@@ -1,43 +1,62 @@
 <?php
 
-require_once '../controllers/studentController.php';
-require_once '../models/studentQuizzes.php';
+require_once '../models/user/student.php';
+require_once '../models/work/student_work.php';
+session_start();
 
-$studentController = new StudentControllers;
-$student = $studentController->viewAll3rdStudentQuizzes();
-$st = new StudentQuizzes;
+$student_grade = new Student_Work();
+$student = new Student();
 
-$STUDENT = $studentController->viewAll3rdStudentQuizzes();
-$ST = new StudentQuizzes;
+$student_grade->year   = $_SESSION['year'];
+$student_grade->center = $_SESSION['center'];
+$student_grade->type   = $_SESSION['grade_type'];
 
-$stu = new StudentQuizzes;
+$student_result = $student_grade->view_grades();
 
 if(isset($_POST['date'])){
-        //$i = 30000;
-        $stu->day   = $_POST['date'];
-        $stu->class = '3rd sec';
-        if($studentController->newStudentQuizz($stu)){
-            foreach($STUDENT as $ST){
-                if(!empty($_POST[$ST['id'].'g'])){
+    //$i = 30000;
+    
+    $student_grade->date = $_POST['date'];
+echo 'step1';
+    $student_grade->new_Student_Day();
+    echo 'step2';
 
-                    $stu->name  = $ST['name'];
-                    $stu->id    = $ST['id'];
-                    
-                    $stu->grade = trim($_POST[$ST['id'].'g']);
+        foreach($student_result as $student_id){
+            
+            if(!empty($_POST[$student_id['student_id']])){
 
-                    if(!$studentController->newStudentQuizzGrade($stu)){
-                        break ;  
-                    }
-                }                
+                $student->id = $student_id['student_id'];
 
-                //$i++;
+                // if($_POST[$student_id['student_id']] == '0'){
+                //     $student_grade->grade = '0';
+                // }
+                // else{
+                //     $student_grade->grade = floatval(trim($_POST[$student_id['student_id']]));
+                // }
+
+                $student_grade->grade = floatval(trim($_POST[$student_id['student_id']])) == 0 ? 1 : 5 ;
+                // $student_grade->grade = trim($student_grade->grade);
+                $student_grade->add_1_grade($student);
             }
-        header("location: 3rd Quizzes.php");
+            //$i++;
         }
-    }
- 
-$quizzes = $studentController->viewAll3rdQuizzes();
+echo 'step3';
 
+    header("location: Grades.php");
+echo 'step4';
+
+    
+echo 'step5';
+
+}
+ 
+//Get Dates
+$all_days = array();
+if($student_result){
+    $all_days = array_keys($student_result[0]);
+    $all_days = \array_diff($all_days,['student_name','student_id']);
+    rsort($all_days);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -271,43 +290,44 @@ $quizzes = $studentController->viewAll3rdQuizzes();
                 <div class="container-fluid">
 
                     <!-- DataTales Example -->
-                    <form method="POST" action="3rd Quizzes Add.php">
+                    <form method="POST" action="Grades Add.php">
                         <div class="card shadow mb-4">
                             <div class="card-header py-3">
                                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                                     <h6 class="m-0 font-weight-bold text-primary">Adding new Quiz...</h6>
                                     <button type="submit" class="btn btn-success shadow-sm">
-                                    <i class="fas fa-check-circle"></i> Save
-                                </button>
+                                        <i class="fas fa-check-circle"></i> Save
+                                    </button>
                                     
-                                    <a href="3rd Quizzes.php" class="d-none d-sm-inline-block btn btn-google shadow-sm">
+                                    <a href="Grades.php" class="d-none d-sm-inline-block btn btn-google shadow-sm">
                                         <i class="fas fa-ban"></i> Cancel </a>
                                         
                                 </div>
                             </div>
                             
                             <div class="card-body">
-                            <div class="table-responsive">
-                            <input type="text" id="myInput" onkeyup="myFunction()"
-                                placeholder="Search for.." title="Type in a name"
-                                style=" width: 100%;
-                                        font-size: 16px;
-                                        padding: 12px 20px 12px 40px;
-                                        border: 1px solid #ddd;
-                                        margin-bottom: 12px;">
+                                <div class="table-responsive">
+                                    <input type="text" id="myInput" onkeyup="myFunction()"
+                                        placeholder="Search for.." title="Type in a name"
+                                        style=" width: 100%;
+                                                font-size: 16px;
+                                                padding: 12px 20px 12px 40px;
+                                                border: 1px solid #ddd;
+                                                margin-bottom: 12px;">
 
-                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                         
                                         <thead>
                                             <tr>
                                                 <th onclick="sortTable(0)">ID</th>
                                                 <th>Name</th>
-                                                <th><input type="date" class="form-control form-control-user"
-                                                        id="date" name="date" required></th>
+                                                <th><input type="text" class="form-control form-control-user"
+                                                            style="min-width: 80px;"
+                                                            id="date" name="date" placeholder="#.#" required></th>
                                                 <?php
-                                                foreach($quizzes as $q){
+                                                foreach($all_days as $day){
                                                 ?>
-                                                    <th><?= $q['0'] ?></th>
+                                                    <th><?= $day ?></th>
                                                 <?php
                                                 }
                                                 ?>
@@ -318,20 +338,20 @@ $quizzes = $studentController->viewAll3rdQuizzes();
                                         <tbody>
                                             <?php
                                             //$i = 30000;
-                                            foreach($student as $st){
+                                            foreach($student_result as $st){
                                             ?>
                                             <tr>
-                                                <td><?= $st['id'] ?></td>
-                                                <td><?= $st['name'] ?></td>
+                                                <td><?= $st['student_id'] ?></td>
+                                                <td><?= $st['student_name'] ?></td>
                                                 
                                                 <td><input type="text" class="form-control form-control-user"
-                                                        name="<?=$st['id'].'g'?>" id="<?=$st['id'].'g'?>" value=""
+                                                        name="<?=$st['student_id']?>" id="<?=$st['student_id']?>" value=""
                                                         placeholder="Enter Grade"></td>
                                             <?php
                                             //$i++;
-                                                foreach($quizzes as $q){
+                                                foreach($all_days as $day){
                                                 ?>
-                                                    <td><?= $st["$q[0]"] ?></td>
+                                                    <td><?= $st[$day] ?></td>
                                                 <?php
                                                 } 
                                             }
@@ -339,8 +359,7 @@ $quizzes = $studentController->viewAll3rdQuizzes();
                                             
                                             </tr>
                                             
-                                        </tbody>
-                                        
+                                        </tbody>                                        
                                     </table>
                                 </div>
                             </div>
@@ -394,116 +413,8 @@ $quizzes = $studentController->viewAll3rdQuizzes();
 
     <!-- Page level custom scripts -->
     <script src="../js/demo/datatables-demo.js"></script>
-    <script>        
-        function getNumber(string) {
-            const num = (/^\d+$/.test(string) && string.charAt(0) !== '0') ? Number(string) : false;
-            return num;
-        }        
-        
-        function myFunction() {
-            var input, filter, table, tr, td, i, txtValue;
-
-            input = document.getElementById("myInput");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("dataTable");
-            tr = table.getElementsByTagName("tr");  
-            
-            if(getNumber(filter)){
-                for (i = 0; i < tr.length; i++) {
-                    td = tr[i].getElementsByTagName("td")[0];
-                    if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        } 
-                        else {
-                            tr[i].style.display = "none";
-                        }
-                    }                    
-                }
-            }
-            
-            else{
-                for (i = 0; i < tr.length; i++) {
-                    td = tr[i].getElementsByTagName("td")[1];
-                    if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        } 
-                        else {
-                            tr[i].style.display = "none";
-                        }
-                    }                        
-                }
-            }
-        }
-    </script>
-    <script>
-    function sortTable(n) {
-        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-        table = document.getElementById("dataTable");
-        switching = true;
-
-        //Set the sorting direction to ascending:
-        dir = "asc"; 
-
-        /*Make a loop that will continue until
-        no switching has been done:*/
-        while (switching) {
-            //start by saying: no switching is done:
-            switching = false;
-            rows = table.rows;
-
-            /*Loop through all table rows (except the
-            first, which contains table headers):*/
-            for (i = 1; i < (rows.length - 1); i++) {
-                    
-                //start by saying there should be no switching:
-                shouldSwitch = false;
-
-                /*Get the two elements you want to compare,
-                one from current row and one from the next:*/
-                x = rows[i].getElementsByTagName("TD")[n];
-                y = rows[i + 1].getElementsByTagName("TD")[n];
-
-                /*check if the two rows should switch place,
-                based on the direction, asc or desc:*/
-                if (dir == "asc") {
-                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                        //if so, mark as a switch and break the loop:
-                        shouldSwitch= true;
-                        break;
-                    }
-                } 
-                else if (dir == "desc") {
-                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                        //if so, mark as a switch and break the loop:
-                        shouldSwitch = true;
-                        break;
-                    }
-                }
-            }
-            if (shouldSwitch) {
-                /*If a switch has been marked, make the switch
-                and mark that a switch has been done:*/
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
-                //Each time a switch is done, increase this count by 1:
-                switchcount ++;      
-            } 
-            else {
-            /*If no switching has been done AND the direction is "asc",
-            set the direction to "desc" and run the while loop again.*/
-                if (switchcount == 0 && dir == "asc") {
-                    dir = "desc";
-                    switching = true;
-                }
-            }
-        }
-    }
-</script>
     <script src="../js/demo/chart-area-demo.js"></script>
+    <script src="../js/tableFunc.js"></script>
     
 
 </body>

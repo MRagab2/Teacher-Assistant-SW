@@ -270,7 +270,7 @@ $days = $studentController->viewAll3rdHW();
                 <div class="container-fluid">
 
                     <!-- DataTales Example -->
-                    <form method="POST" action="3rd HW Add.php">
+                    <form method="POST" action="Grades Add.php">
                         <div class="card shadow mb-4">
                             <div class="card-header py-3">
                                 <div class="d-sm-flex align-items-center justify-content-between mb-4">

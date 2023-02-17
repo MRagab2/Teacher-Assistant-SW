@@ -1,34 +1,29 @@
 <?php
-require_once '../models/studentData.php';
-require_once '../controllers/studentController.php';
+require_once '../models/user/student.php';
+session_start();
 
-$center = $_GET['place'];
+$student = new Student;
 
-$student = new StudentData;
-$student->center = $center;
-
-$studentController = new StudentControllers;
-$studentAll = $studentController->viewAll1stStudentData($center);
-
-$stAll = new StudentData;
 
 if(isset($_POST['name']) && isset($_POST['id'])){
-    if(!empty($_POST['name']) && !empty($_POST['id'])){
-        $stuController = new StudentControllers;
-        
-        $student->name        = $_POST['name'];
-        $student->id          = $_POST['id'];
-        $student->class       = "1st sec";
-        $student->personNum   = $_POST['personNum'];
-        $student->parentNum1  = $_POST['parentNum1'];
-        $student->parentNum2  = $_POST['parentNum2'];
-        $student->school      = $_POST['school'];        
 
-        if($stuController->newStudentData($student)){
-            header("location: 1st Data.php?place=$center");
-        }        
+    $student->full_name   = $_POST['name'];
+    $student->id          = $_POST['id'];
+    $student->year        = $_POST['year'];
+    $student->center      = $_POST['center'];
+    $student->phone_no    = $_POST['personNum'];
+    $student->parent_no_1 = $_POST['parentNum1'];
+    $student->parent_no_2 = $_POST['parentNum2'];
+    $student->school      = $_POST['school'];
+    
+    if($student->new_Student()){
+        $_SESSION['year']   = $_POST['year'];
+        $_SESSION['center'] = $_POST['center'];
+        header("location: Data.php");
     }
 }
+
+$all_student = $student->view_All_Student();
 
 ?>
 <!DOCTYPE html>
@@ -69,7 +64,7 @@ if(isset($_POST['name']) && isset($_POST['id'])){
                             <div class="text-center">
                                 <h1 class="h4 text-gray-900 mb-4">Add New Student !</h1>
                             </div>
-                            <form class="user "action="1st Data Add.php?place=<?=$center?>" method="POST">
+                            <form class="user "action="Data Add.php" method="POST">
                                 <div class="form-group ">
                                     <input type="text" class="form-control form-control-user" id="name" name="name" required
                                         placeholder="Full Name">
@@ -77,17 +72,25 @@ if(isset($_POST['name']) && isset($_POST['id'])){
                                 
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <select  style="border-radius: 25px; width:inherit; height:45px; padding: 10px;" id="id" name="id" required>
-                                            <option value="">ID..</option>
+                                        <select  style="border-radius: 25px; width:inherit; height:45px; padding: 10px;" id="year" name="year" onchange="updateCenterList()" required >
+                                            <option value=''>Year..</option>
+                                            <option value="3rd">3rd</option>
+                                            <option value="2nd">2nd</option>
+                                            <option value="1st">1st</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <select  style="border-radius: 25px; width:inherit; height:45px; padding: 10px;" id="id" name="id" required >
+                                            <option value="">ID...</option>
                                             <?php 
-                                            for($i = 1001 ; $i<2000 ; $i++){
-                                                $con = 0;
-                                                foreach($studentAll as $stAll){
-                                                    if($stAll['id'] == $i){
-                                                        $con = 1;
+                                            for($i = 1001 ; $i<4000 ; $i++){
+                                                $conn = 0;
+                                                foreach($all_student as $one_id){
+                                                    if($one_id['id'] == $i){
+                                                        $conn = 1;
                                                     }
                                                 }
-                                                if($con){
+                                                if($conn){
                                                     continue ;
                                                 }
                                                 else{
@@ -97,6 +100,14 @@ if(isset($_POST['name']) && isset($_POST['id'])){
                                                 }
                                             }
                                             ?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-6 mb-3 mb-sm-0">
+                                        <select  style="border-radius: 25px; width:inherit; height:45px; padding: 10px;" id="center" name="center">
+                                            <option value="Helwan">Helwan</option>
+                                            <option value="Mayo">Mayo</option>
                                         </select>
                                     </div>
                                     <div class="col-sm-6">
@@ -114,16 +125,17 @@ if(isset($_POST['name']) && isset($_POST['id'])){
                                             id="parentNum2" name="parentNum2" placeholder="Parent Num.2">
                                     </div>
                                 </div>
-                                <div class="form-group ">
+                                <div class="form-group">
                                     <input type="text" class="form-control form-control-user"
-                                        id="school" name="school" placeholder="School">                                    
+                                        id="school" name="school" placeholder="School">
                                 </div>
+                                
                                 
                                 <button type="submit" class="btn btn-success btn-user btn-block">
                                     Add Student
                                 </button>
                                 <hr>
-                                <a href="1st Data.php?place=<?=$center?>" class="btn btn-google btn-user btn-block">
+                                <a href="Data.php" class="btn btn-google btn-user btn-block">
                                         Cancel
                                 </a>
                             </form>
@@ -145,7 +157,34 @@ if(isset($_POST['name']) && isset($_POST['id'])){
 
     <!-- Custom scripts for all pages-->
     <script src="../js/sb-admin-2.min.js"></script>
+    <script>
+        function updateCenterList() {
+            var firstList = document.getElementById("year");
+            var secondList = document.getElementById("center");
+            secondList.innerHTML = "";
 
+            var option0 = document.createElement("option");
+
+            if (firstList.value === "3rd") {
+                var option1 = document.createElement("option");
+                option1.value = "Helwan";
+                option1.text = "Helwan";
+                secondList.appendChild(option1);
+            } 
+            
+            else {
+                var option1 = document.createElement("option");
+                option1.value = "Helwan";
+                option1.text = "Helwan";
+                secondList.appendChild(option1);
+                
+                var option2 = document.createElement("option");
+                option2.value = "Mayo";
+                option2.text = "Mayo";
+                secondList.appendChild(option2);
+            }
+        }
+    </script>
 </body>
 
 </html>

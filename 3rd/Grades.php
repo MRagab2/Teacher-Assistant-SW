@@ -1,42 +1,61 @@
 <?php
 
-require_once '../controllers/studentController.php';
-require_once '../models/studentQuizzes.php';
+require_once '../models/user/student.php';
+require_once '../models/work/student_work.php';
 
+session_start();
 
-$studentController = new StudentControllers;
-$st = new StudentQuizzes;
-$st->class = '3rd sec';
+$student_grade = new Student_Work();
+//Filtering
+    if(isset($_GET['grade_filter'])){
+        $_SESSION['grade_type'] = $_GET['grade_filter'];
+    }
+    if(isset($_SESSION['grade_type'])){
+        $student_grade->type = $_SESSION['grade_type'];
+    }
+
+    if(isset($_GET['class_filter'])){
+        $_SESSION['year'] = $_GET['class_filter'];
+    }
+    if(isset($_SESSION['year'])){
+        if($_SESSION['year']=='2nd')
+            $_SESSION['year']='2nd_math';
+        $student_grade->year = $_SESSION['year'];
+    }
+
+    if(isset($_GET['center_filter'])){
+        $_SESSION['center'] = $_GET['center_filter'];
+    }
+    if(isset($_SESSION['center'])){
+        if(($student_grade->year == '3rd' && $_SESSION['center'] =='Mayo') || empty($_SESSION['center']))
+            $_SESSION['center'] = 'Helwan';
+        
+        $student_grade->center = $_SESSION['center'];    
+    }
 
 if(isset($_POST["del"])){
     if($_GET['DEL']==2){
-        if(!empty($_POST["quizDate"])){
-            $st->day = $_POST["quizDate"];
-            
-            if($studentController->deleteStudentQuizz($st)){
-                $student = $studentController->viewAll3rdStudentQuizzes();
-                header('location: 3rd Quizzes.php');
+        if(!empty($_POST["dayDate"])){
+            $student_grade->date = $_POST["dayDate"];
+
+            if($student_grade->drop_Student_Day()){
+
+                $student_result = $student_grade->view_grades();
+                header('location: Grades.php');
             }
         }
         $_GET['DEL'] = 0;
     }
 }
-if(isset($_POST["clr"])){
-    if($_GET['CLR']==2){
-        if(!empty($_POST["quizDate"])){
-            $st->day = $_POST["quizDate"];
 
-            if($studentController->nullStudentQuizz($st)){
-                $student = $studentController->viewAll3rdStudentQuizzes();
-                header('location: 3rd Quizzes.php');
-            }
-        }
-        $_GET['CLR'] = 0;
-    }
+$student_result = $student_grade->view_grades();
+//Get Dates
+$all_days = array();
+if($student_result){
+    $all_days = array_keys($student_result[0]);
+    $all_days = \array_diff($all_days,['student_name','student_id']);
+    rsort($all_days);
 }
-$quizzes = $studentController->viewAll3rdQuizzes();
-$student = $studentController->viewAll3rdStudentQuizzes();
-
 ?>
 
 <!DOCTYPE html>
@@ -50,7 +69,7 @@ $student = $studentController->viewAll3rdStudentQuizzes();
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>3rd sec Quizzes</title>
+    <title>3rd Sec HomeWork</title>
 
     <!-- Custom fonts for this template -->
     <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -110,9 +129,9 @@ $student = $studentController->viewAll3rdStudentQuizzes();
                 </a>
                 <div id="collapse3rd" class="collapse show" aria-labelledby="heading3rd" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item"        href="3rd Data.php">Data</a>
-                        <a class="collapse-item active" href="3rd Quizzes.php">Quizzes</a>
-                        <a class="collapse-item"        href="3rd HW.php">HomeWork</a>
+                        <a class="collapse-item"        href="Data.php">Data</a>
+                        <a class="collapse-item"        href="3rd Quizzes.php">Quizzes</a>
+                        <a class="collapse-item active" href="Grades.php">HomeWork</a>
                         <a class="collapse-item"        href="3rd Attendance.php">Attendance</a>
                         <a class="collapse-item"        href="3rd Exams.php">Exams</a>
                         <!-- <a class="collapse-item"        href="">Notes</a> -->
@@ -176,8 +195,7 @@ $student = $studentController->viewAll3rdStudentQuizzes();
                         <a class="collapse-item" href="../2nd mech/2nd Mech Exams.php?place=Mayo">Exams</a>
                     </div>
                 </div>
-            </li>
-            
+            </li>            
 
             <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
@@ -229,13 +247,12 @@ $student = $studentController->viewAll3rdStudentQuizzes();
                     <i class="fa fa-users"></i>
                     <span>Assistants Data</span></a>
             </li>
+            
             <!-- Nav Item - Tables -->
             <li class="nav-item ">
                 <a class="nav-link" href="../assistant/Assistant Availability.php">
                     <i class="far fa-calendar-alt"></i>
                     <span>Assistants Availability</span></a>
-            </li>
-             
             </li>
              <!-- Nav Item - Tables -->
              <li class="nav-item ">
@@ -262,8 +279,43 @@ $student = $studentController->viewAll3rdStudentQuizzes();
             <div id="content">
 
                 <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-
+                <nav class="navbar navbar-light navbar-expand bg-white shadow mb-4 topbar static-top" style="padding-left: 0px;padding-bottom: 0px;padding-top: 0px;">
+                    <div >
+                        <div class="btn-group" style="padding-left: 30px;">
+                            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <?= $_SESSION['year'] ? $_SESSION['year'] : 'Class'  ?>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item" href="#">Class</a>
+                                <a class="dropdown-item <?= $_SESSION['year']=='3rd' ? 'active': '' ?>" href="Grades.php?class_filter=3rd">3rd</a>
+                                <a class="dropdown-item <?= $_SESSION['year']=='2nd_math' ? 'active': '' ?>" href="Grades.php?class_filter=2nd_math">2nd Math</a>
+                                <a class="dropdown-item <?= $_SESSION['year']=='2nd_mech' ? 'active': '' ?>" href="Grades.php?class_filter=2nd_mech">2nd Mech</a>
+                                <a class="dropdown-item <?= $_SESSION['year']=='1st' ? 'active': '' ?>" href="Grades.php?class_filter=1st">1st</a>
+                            </div>
+                        </div>
+                        <div class="btn-group" style="padding-left: 20px;">
+                            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <?= $_SESSION['grade_type'] ? $_SESSION['grade_type']: 'Grade' ?>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item" href="Data.php">Data</a>
+                                <a class="dropdown-item <?= $_SESSION['grade_type']=='attendance' ? 'active': '' ?>" href="Grades.php?grade_filter=attendance">Attendance</a>
+                                <a class="dropdown-item <?= $_SESSION['grade_type']=='quiz_grade' ? 'active': '' ?>" href="Grades.php?grade_filter=quiz_grade">Quizzes</a>
+                                <a class="dropdown-item <?= $_SESSION['grade_type']=='hw_grade'   ? 'active': '' ?>" href="Grades.php?grade_filter=hw_grade">Homewok</a>
+                                <a class="dropdown-item <?= $_SESSION['grade_type']=='exam_grade' ? 'active': '' ?>" href="Grades.php?grade_filter=exam_grade">Exams</a>
+                            </div>
+                        </div>
+                        <div class="btn-group" style="padding-left: 20px;">
+                            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <?= $_SESSION['center'] ? $_SESSION['center'] : 'Center'  ?>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <a class="dropdown-item <?= !$_SESSION['center'] ? 'active': '' ?>" href="Grades.php?center_filter=">Center</a>
+                                <a class="dropdown-item <?= $_SESSION['center']=='Helwan' ? 'active': '' ?>" href="Grades.php?center_filter=Helwan">Helwan</a>
+                                <a class="dropdown-item <?= $_SESSION['center']=='Mayo' ? 'active': '' ?>" href="Grades.php?center_filter=Mayo">Mayo</a>
+                            </div>
+                        </div>
+                    </div>
                 </nav>
                 <!-- End of Topbar -->
 
@@ -274,9 +326,8 @@ $student = $studentController->viewAll3rdStudentQuizzes();
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
                             <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                                <h6 class="m-0 font-weight-bold text-primary">3rd Sec Quizzes</h6>
-                                    <a href="3rd Quizzes Add.php" class="btn btn-primary btn-icon-split"><span class="icon text-white">                                        
-                                        <i class="fas fa-plus-circle"></i></span><span class="text"> New Quiz</a>
+                                <h6 class="m-0 font-weight-bold text-primary"><?= $_SESSION['year'] ?> Sec <?= $_SESSION['grade_type'].' ('.$_SESSION['center'].') ' ?></h6>
+                                    <a href="Grades Add.php" class="btn btn-primary btn-icon-split"><span class="icon text-white">                                        <i class="fas fa-plus-circle"></i></span><span class="text"> New Day</a>
                             </div>
                         </div>
                         
@@ -296,9 +347,9 @@ $student = $studentController->viewAll3rdStudentQuizzes();
                                             <th onclick="sortTable(0)">ID</th>
                                             <th>Name</th>
                                             <?php
-                                            foreach($quizzes as $q){
+                                            foreach($all_days as $day){
                                                 ?>
-                                                    <th><?= $q['0'] ?></th>
+                                                    <th><?= $day ?></th>
                                                 <?php
                                             }
                                             ?>
@@ -309,65 +360,38 @@ $student = $studentController->viewAll3rdStudentQuizzes();
                                             <th onclick="sortTable(0)">ID</th>
                                             <th>Name</th>
                                             <?php
-                                            foreach($quizzes as $q){
+                                            foreach($all_days as $day){
                                                 ?>
                                                 <th>
-                                                    <form action="3rd Quizzes Edit.php" method="GET">
-                                                        <input type="hidden" name="quizDate" value= "<?php $_SESSION['quizDate'] = $q['0']; echo $q['0']?>">
-                                                        <button type="submit" name="edit" class="btn btn-info btn-user btn-block" ><i class="fas fa-edit"></i></button>
+                                                    <form action="3rd HW Edit.php" method="GET">
+                                                        <input type="hidden" name="dayDate" value= "<?php $_SESSION['dayDate'] = $day; echo $day?>">
+                                                        <button type="submit" name="edit" class="btn btn-info btn-user btn-block"><i class="fas fa-edit"></i></button>
                                                     </form>
                                                     <hr>
                                                     <?php
-                                                    if(isset($_GET['CLR'])){
-                                                        if($_GET['CLR']==1){
-                                                    ?>
-                                                        <form action="3rd Quizzes.php?CLR=2" method="POST">
-                                                        <input type="hidden" name="quizDate" value= "<?= $q['0']?>">
-                                                        <button type="submit" name="clr" class="btn btn-warning btn-user btn-block"> Clear</button>
-                                                    </form>
-                                                    <?php
-                                                        }
-                                                        else{
-                                                            ?>
-                                                            <form action="3rd Quizzes.php?CLR=1" method="POST">
-                                                                <input type="hidden" name="quizDate" value= "<?= $q['0']?>">
-                                                                <button type="submit" name="clr" class="btn btn-warning btn-user btn-block"> Clear</button>
-                                                            </form>
-                                                            <?php
-                                                            }
-                                                    }
-                                                    else{
-                                                    ?>
-                                                        <form action="3rd Quizzes.php?CLR=1" method="POST">
-                                                        <input type="hidden" name="quizDate" value= "<?= $q['0']?>">
-                                                        <button type="submit" name="clr" class="btn btn-warning btn-user btn-block"> Clear</button>
-                                                    </form>
-                                                    <?php
-                                                    }
-
                                                     if(isset($_GET['DEL'])){
                                                         if($_GET['DEL']==1){
                                                     ?>
-                                                    <form action="3rd Quizzes.php?DEL=2" method="POST" >                                                        
-                                                        <input type="hidden" name="quizDate" value= "<?= $q['0']?>">
-                                                        <button type="submit" name="del" class="btn btn-google btn-user btn-block" ><i class="fa fa-trash"></i></button>
+                                                    <form action="Grades.php?DEL=2" method="POST" >                                                        
+                                                        <input type="hidden" name="dayDate" value= "<?= $day?>">
+                                                        <button type="submit" name="del" class="btn btn-google btn-user btn-block" ><i class="fas fa-trash-alt"></i></button>
                                                     </form>
                                                     <?php
                                                         }
                                                         else{
                                                             ?>
-                                                            <form action="3rd Quizzes.php?DEL=1" method="POST" >
-                                                                <input type="hidden" name="quizDate" value= "<?= $q['0']?>">
-                                                                <button type="submit" name="del" class="btn btn-google btn-user btn-block" ><i class="fa fa-trash"></i></button>
+                                                            <form action="Grades.php?DEL=1" method="POST" >
+                                                                <input type="hidden" name="dayDate" value= "<?= $day?>">
+                                                                <button type="submit" name="del" class="btn btn-google btn-user btn-block" ><i class="fas fa-trash-alt"></i></button>
                                                             </form>
                                                         <?php
                                                         }
                                                     }
                                                     else{
                                                     ?>
-                                                        <form action="3rd Quizzes.php?DEL=1" method="POST" >
-                                                            <input type="hidden" name="quizDate" value= "<?= $q['0']?>">
-                                                            <button type="submit" name="del" class="btn btn-google btn-user btn-block" ><i class="fa fa-trash"></i></button>
+                                                        <form action="Grades.php?DEL=1" method="POST" >
+                                                            <input type="hidden" name="dayDate" value= "<?= $day?>">
+                                                            <button type="submit" name="del" class="btn btn-google btn-user btn-block" ><i class="fas fa-trash-alt"></i></button>
                                                         </form>
                                                     <?php
                                                     }
@@ -379,23 +403,61 @@ $student = $studentController->viewAll3rdStudentQuizzes();
                                         </tr>
                                     </tfoot>
                                     <tbody>
-                                        <?php
-                                        foreach($student as $st){
+                                    <?php
+                                        foreach($student_result as $st){
                                         ?>
                                         <tr>
-                                            <td><?= $st['id'] ?></td>
-                                            <td><?= $st['name'] ?></td>
+                                            <td><?= $st['student_id'] ?></td>
+                                            <td><?= $st['student_name'] ?></td>
                                             <?php
-                                            foreach($quizzes as $q){
-                                            ?>
-                                                <td><?= $st["$q[0]"] ?></td>
-                                            <?php
+                                            foreach($all_days as $day){
+
+                                                switch($st["$day"]){
+                                                    case 'A+':
+                                                        ?>
+                                                        <td style="background-color:#00ff00; color:black"><?= $st["$day"] ?></td>
+                                                        <?php
+                                                        break;
+                                                    case 'A':
+                                                        ?>
+                                                        <td style="background-color:#008000; color:white"><?= $st["$day"] ?></td>
+                                                        <?php
+                                                        break;
+                                                    case 'B':
+                                                        ?>
+                                                        <td style="background-color:#ffff99; color:black"><?= $st["$day"] ?></td>
+                                                        <?php
+                                                        break;
+                                                    case 'C':
+                                                        ?>
+                                                        <td style="background-color:#ffff00; color:black"><?= $st["$day"] ?></td>
+                                                        <?php
+                                                        break;
+                                                    case 'D':
+                                                        ?>
+                                                        <td style="background-color:#ff9933; color:black"><?= $st["$day"] ?></td>
+                                                        <?php
+                                                        break;
+                                                    case 'F':
+                                                        ?>
+                                                        <td style="background-color:#ff0000; color:black"><?= $st["$day"] ?></td>
+                                                        <?php
+                                                        break;
+                                                    case 'No HW':
+                                                        ?>
+                                                        <td style="background-color:#333333; color:white"><?= $st["$day"] ?></td>
+                                                        <?php
+                                                        break;
+                                                    default:
+                                                        ?>
+                                                        <td><?= $st["$day"] ?></td>
+                                                        <?php
+                                                }
                                             }
                                         }
                                         ?>
                                            
-                                        </tr>
-                                        
+                                        </tr>                                        
                                     </tbody>
                                 </table>
                             </div>
@@ -405,11 +467,8 @@ $student = $studentController->viewAll3rdStudentQuizzes();
                 </div>
                 <!-- /.container-fluid -->
 
-                
-
             </div>
             <!-- End of Main Content -->
-            
 
             <!-- Footer -->
             <footer class="sticky-footer bg-white">
@@ -445,119 +504,10 @@ $student = $studentController->viewAll3rdStudentQuizzes();
     <!-- Page level plugins -->
     <!-- <script src="../vendor/datatables/jquery.dataTables.min.js"></script> -->
     <script src="../vendor/datatables/dataTables.bootstrap4.min.js"></script>
-    <script src="../vendor/chart.js/Chart.min.js"></script>
 
     <!-- Page level custom scripts -->
     <script src="../js/demo/datatables-demo.js"></script>
-    <script>        
-        function getNumber(string) {
-            const num = (/^\d+$/.test(string) && string.charAt(0) !== '0') ? Number(string) : false;
-            return num;
-        }        
-        
-        function myFunction() {
-            var input, filter, table, tr, td, i, txtValue;
-
-            input = document.getElementById("myInput");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("dataTable");
-            tr = table.getElementsByTagName("tr");  
-            
-            if(getNumber(filter)){
-                for (i = 0; i < tr.length; i++) {
-                    td = tr[i].getElementsByTagName("td")[0];
-                    if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        } 
-                        else {
-                            tr[i].style.display = "none";
-                        }
-                    }                    
-                }
-            }
-            
-            else{
-                for (i = 0; i < tr.length; i++) {
-                    td = tr[i].getElementsByTagName("td")[1];
-                    if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        } 
-                        else {
-                            tr[i].style.display = "none";
-                        }
-                    }                        
-                }
-            }
-        }
-    </script>
-    <script>
-    function sortTable(n) {
-        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-        table = document.getElementById("dataTable");
-        switching = true;
-
-        //Set the sorting direction to ascending:
-        dir = "asc"; 
-
-        /*Make a loop that will continue until
-        no switching has been done:*/
-        while (switching) {
-            //start by saying: no switching is done:
-            switching = false;
-            rows = table.rows;
-
-            /*Loop through all table rows (except the
-            first, which contains table headers):*/
-            for (i = 1; i < (rows.length - 1); i++) {
-                    
-                //start by saying there should be no switching:
-                shouldSwitch = false;
-
-                /*Get the two elements you want to compare,
-                one from current row and one from the next:*/
-                x = rows[i].getElementsByTagName("TD")[n];
-                y = rows[i + 1].getElementsByTagName("TD")[n];
-
-                /*check if the two rows should switch place,
-                based on the direction, asc or desc:*/
-                if (dir == "asc") {
-                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                        //if so, mark as a switch and break the loop:
-                        shouldSwitch= true;
-                        break;
-                    }
-                } 
-                else if (dir == "desc") {
-                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                        //if so, mark as a switch and break the loop:
-                        shouldSwitch = true;
-                        break;
-                    }
-                }
-            }
-            if (shouldSwitch) {
-                /*If a switch has been marked, make the switch
-                and mark that a switch has been done:*/
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
-                //Each time a switch is done, increase this count by 1:
-                switchcount ++;      
-            } 
-            else {
-            /*If no switching has been done AND the direction is "asc",
-            set the direction to "desc" and run the while loop again.*/
-                if (switchcount == 0 && dir == "asc") {
-                    dir = "desc";
-                    switching = true;
-                }
-            }
-        }
-    }
-</script>
+    <script src="../js/tableFunc.js"></script>
 
 </body>
 

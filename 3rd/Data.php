@@ -1,42 +1,57 @@
 <?php
 
-require_once '../controllers/studentController.php';
-require_once '../models/studentExams.php';
+require_once '../models/user/student.php';
+session_start();
+echo $_SESSION['year'];
+echo $_SESSION['center'];
+echo $_SESSION['grade_type'];
 
+$student = new Student;
 
-$studentController = new StudentControllers;
-$st = new StudentExams;
-$st->class = '3rd sec';
+if(isset($_GET['class_filter'])){
+    $_SESSION['year'] = $_GET['class_filter'];
+}
+if(isset($_GET['center_filter'])){
+    $_SESSION['center'] = $_GET['center_filter'];
+}
+
+if(isset($_SESSION['year'])){
+    if($_SESSION['year'] == '2nd_math' || $_SESSION['year'] == '2nd_mech')
+        $_SESSION['year'] = '2nd';
+    $student->year = $_SESSION['year'];
+}
+if(isset($_SESSION['center'])){
+    if($student->year == '3rd' && $_SESSION['center'] =='Mayo')
+        $_SESSION['center'] = 'Helwan';
+
+    $student->center = $_SESSION['center'];
+}
 
 if(isset($_POST["del"])){
     if($_GET['DEL']==2){
-        if(!empty($_POST["examNum"])){
-            $st->num = $_POST["examNum"];
-            
-            if($studentController->deleteStudentExam($st)){
-                $student = $studentController->viewAll3rdStudentExams();
-                header('location: 3rd Exams.php');
+        if(!empty($_POST["stuID"])){
+            $student->id = $_POST["stuID"];            
+
+            if($student->delete_Student()){
+                if($student->center){
+                    $student_result = $student->view_All_Student_Center_Class();
+                }
+                else{
+                    $student_result = $student->view_All_Student_Class();
+                }  
+                header('location: Data.php');
             }
         }
         $_GET['DEL'] = 0;
     }
 }
-if(isset($_POST["clr"])){
-    if($_GET['CLR']==2){
-        if(!empty($_POST["examNum"])){
-            $st->num = $_POST["examNum"];
 
-            if($studentController->nullStudentExam($st)){
-                $student = $studentController->viewAll3rdStudentExams();
-                header('location: 3rd Exams.php');
-            }
-        }
-        $_GET['CLR'] = 0;
-    }
+if($student->center){
+    $student_result = $student->view_All_Student_Center_Class();
 }
-$exams = $studentController->viewAll3rdExams();
-$student = $studentController->viewAll3rdStudentExams();
-
+else{
+    $student_result = $student->view_All_Student_Class();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -49,7 +64,7 @@ $student = $studentController->viewAll3rdStudentExams();
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>3rd Sec Exams</title>
+    <title><?= $_SESSION['year']; ?> Sec Data</title>
 
     <!-- Custom fonts for this template -->
     <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -109,11 +124,11 @@ $student = $studentController->viewAll3rdStudentExams();
                 </a>
                 <div id="collapse3rd" class="collapse show" aria-labelledby="heading3rd" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item"        href="3rd Data.php">Data</a>
+                        <a class="collapse-item active" href="Data.php">Data</a>
                         <a class="collapse-item"        href="3rd Quizzes.php">Quizzes</a>
-                        <a class="collapse-item"        href="3rd HW.php">HomeWork</a>
+                        <a class="collapse-item"        href="Grades.php">HomeWork</a>
                         <a class="collapse-item"        href="3rd Attendance.php">Attendance</a>
-                        <a class="collapse-item active" href="3rd Exams.php">Exams</a>
+                        <a class="collapse-item"        href="3rd Exams.php">Exams</a>
                         <!-- <a class="collapse-item"        href="">Notes</a> -->
                     </div>
                 </div>
@@ -213,7 +228,7 @@ $student = $studentController->viewAll3rdStudentExams();
                     </div>
                 </div>
             </li>
-            
+
             <!-- Divider -->
             <hr class="sidebar-divider">
 
@@ -260,8 +275,42 @@ $student = $studentController->viewAll3rdStudentExams();
             <div id="content">
 
                 <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-
+                <nav class="navbar navbar-light navbar-expand bg-white shadow mb-4 topbar static-top" style="padding-left: 0px;padding-bottom: 0px;padding-top: 0px;">
+                    <div >
+                    <div class="btn-group" style="padding-left: 30px;">
+                            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <?= $_SESSION['year'] ? $_SESSION['year'] : 'Class'  ?>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item" href="#">Class</a>
+                                <a class="dropdown-item <?= $_SESSION['year']=='3rd' ? 'active': '' ?>" href="Data.php?class_filter=3rd">3rd</a>
+                                <a class="dropdown-item <?= $_SESSION['year']=='2nd' ? 'active': '' ?>" href="Data.php?class_filter=2nd">2nd</a>
+                                <a class="dropdown-item <?= $_SESSION['year']=='1st' ? 'active': '' ?>" href="Data.php?class_filter=1st">1st</a>
+                            </div>
+                        </div>
+                        <div class="btn-group" style="padding-left: 20px;">
+                            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Data
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item active" href="Data.php">Data</a>
+                                <a class="dropdown-item" href="Grades.php?grade_filter=attendance">Attendance</a>
+                                <a class="dropdown-item" href="Grades.php?grade_filter=quiz_grade">Quizzes</a>
+                                <a class="dropdown-item" href="Grades.php?grade_filter=hw_grade">Homewok</a>
+                                <a class="dropdown-item" href="Grades.php?grade_filter=exam_grade">Exams</a>
+                            </div>
+                        </div>
+                        <div class="btn-group" style="padding-left: 20px;">
+                            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <?= $_SESSION['center'] ? $_SESSION['center'] : 'Center'  ?>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <a class="dropdown-item <?= !$_SESSION['center'] ? 'active': '' ?>" href="Data.php?center_filter=">Center</a>
+                                <a class="dropdown-item <?= $_SESSION['center']=='Helwan' ? 'active': '' ?>" href="Data.php?center_filter=Helwan">Helwan</a>
+                                <a class="dropdown-item <?= $_SESSION['center']=='Mayo' ? 'active': '' ?>" href="Data.php?center_filter=Mayo">Mayo</a>
+                            </div>
+                        </div>
+                    </div>
                 </nav>
                 <!-- End of Topbar -->
 
@@ -272,14 +321,15 @@ $student = $studentController->viewAll3rdStudentExams();
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
                             <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                                <h6 class="m-0 font-weight-bold text-primary">3rd Sec Exams</h6>
-                                    <a href="3rd Exams Add.php" class="btn btn-primary btn-icon-split"><span class="icon text-white">                                        <i class="fas fa-plus-circle"></i></span><span class="text"> New Exam</a>
+                                <h6 class="m-0 font-weight-bold text-primary"><?= $_SESSION['year']; ?> Sec Data <?= $_SESSION['center'] ? '('.$_SESSION['center'].')' : ''; ?></h6>
+                                    <a href="Data Add.php" class="btn btn-primary btn-icon-split"><span class="icon text-white"><i class="fa fa-user-plus"></i>
+                                    </span><span class="text"> New Student</a>
                             </div>
                         </div>
                         
                         <div class="card-body">
                             <div class="table-responsive">
-                            <input type="text" id="myInput" onkeyup="myFunction()"
+                            <input type="text" id="myInput" onkeyup="search()"
                                 placeholder="Search for.." title="Type in a name"
                                 style=" width: 100%;
                                         font-size: 16px;
@@ -289,73 +339,55 @@ $student = $studentController->viewAll3rdStudentExams();
 
                                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
-                                        <tr>
-                                           
+                                        <tr>                                            
                                             <th onclick="sortTable(0)">ID</th>
                                             <th>Name</th>
-                                            <?php
-                                            foreach($exams as $ex){
-                                            ?>
-                                                <th><?= $ex['0'] ?></th>
-                                            <?php
-                                            }
-                                            ?>
+                                            <th>Personal Num.</th>
+                                            <th>Parent Num.1</th>
+                                            <th>Parent Num.2</th>
+                                            <th>School</th>
+                                            <?php if(!$student->center) { ?>
+                                            <th>Center</th>
+                                            <?php } ?>
+                                            <th>Edit</th>                                            
                                         </tr>
                                     </thead>
-                                    <tfoot>
-                                        <tr>
-                                            <th onclick="sortTable(0)">ID</th>
-                                            <th>Name</th>
-                                            <?php
-                                            foreach($exams as $ex){
-                                                ?>
-                                                <th>
-                                                    <form action="3rd Exams Edit.php" method="GET">
-                                                        <input type="hidden" name="examNum" value= "<?php $_SESSION['examNum'] = $ex['0']; echo $ex['0']?>">
-                                                        <button type="submit" name="edit" class="btn btn-info btn-user btn-block"><i class="fas fa-edit"></i></button>
+                                    
+                                    <tbody>
+                                        <?php 
+                                            foreach($student_result as $st){
+                                        ?>  
+                                            <tr>
+                                                <td><?= $st['id'] ?></td>
+                                                <td><?= $st['name'] ?></a></td>
+                                                <td><?= $st['phone_no'] ?></td>
+                                                <td><?= $st['parent_no_1'] ?></td>
+                                                <td><?= $st['parent_no_2'] ?></td>
+                                                <td><?= $st['school'] ?></td>
+                                                <?php if(!$student->center) { ?>
+                                                <td><?= $st['center'] ?></td>
+                                                <?php } ?>
+                                                <td>
+                                                    <form action="Data Edit.php" method="GET">
+                                                        <input type="hidden" name="student_id" value= "<?php $_SESSION['student_id'] = $st['id'] ; echo$_SESSION['student_id']?>">
+                                                        <button type="submit" name="" class="btn btn-info btn-user btn-block" ><i class="fas fa-user-edit"></i></button>
                                                     </form>
                                                     <hr>
-                                                    <?php
-                                                    if(isset($_GET['CLR'])){
-                                                        if($_GET['CLR']==1){
-                                                    ?>
-                                                        <form action="3rd Exams.php?CLR=2" method="POST">
-                                                        <input type="hidden" name="examNum" value= "<?= $ex['0']?>">
-                                                        <button type="submit" name="clr" class="btn btn-warning btn-user btn-block"> Clear</button>
-                                                    </form>
-                                                    <?php
-                                                        }
-                                                        else{
-                                                            ?>
-                                                            <form action="3rd Exams.php?CLR=1" method="POST">
-                                                                <input type="hidden" name="examNum" value= "<?= $ex['0']?>">
-                                                                <button type="submit" name="clr" class="btn btn-warning btn-user btn-block"> Clear</button>
-                                                            </form>
-                                                            <?php
-                                                            }
-                                                    }
-                                                    else{
-                                                    ?>
-                                                        <form action="3rd Exams.php?CLR=1" method="POST">
-                                                        <input type="hidden" name="examNum" value= "<?= $ex['0']?>">
-                                                        <button type="submit" name="clr" class="btn btn-warning btn-user btn-block"> Clear</button>
-                                                    </form>
-                                                    <?php
-                                                    }
 
+                                                    <?php
                                                     if(isset($_GET['DEL'])){
                                                         if($_GET['DEL']==1){
                                                     ?>
-                                                    <form action="3rd Exams.php?DEL=2" method="POST" >                                                        
-                                                        <input type="hidden" name="examNum" value= "<?= $ex['0']?>">
+                                                    <form action="Data.php?DEL=2" method="POST" >                                                        
+                                                        <input type="hidden" name="stuID" value= "<?= $st['id']?>">
                                                         <button type="submit" name="del" class="btn btn-google btn-user btn-block" ><i class="fas fa-trash-alt"></i></button>
                                                     </form>
                                                     <?php
                                                         }
                                                         else{
                                                             ?>
-                                                            <form action="3rd Exams.php?DEL=1" method="POST" >
-                                                                <input type="hidden" name="examNum" value= "<?= $ex['0']?>">
+                                                            <form action="Data.php?DEL=1" method="POST" >
+                                                                <input type="hidden" name="stuID" value= "<?= $st['id']?>">
                                                                 <button type="submit" name="del" class="btn btn-google btn-user btn-block" ><i class="fas fa-trash-alt"></i></button>
                                                             </form>
                                                         <?php
@@ -363,55 +395,20 @@ $student = $studentController->viewAll3rdStudentExams();
                                                     }
                                                     else{
                                                     ?>
-                                                        <form action="3rd Exams.php?DEL=1" method="POST" >
-                                                            <input type="hidden" name="examNum" value= "<?= $ex['0']?>">
+                                                        <form action="Data.php?DEL=1" method="POST" >
+                                                            <input type="hidden" name="stuID" value= "<?= $st['id']?>">
                                                             <button type="submit" name="del" class="btn btn-google btn-user btn-block" ><i class="fas fa-trash-alt"></i></button>
                                                         </form>
                                                     <?php
                                                     }
                                                     ?>
-
-                                                    <!-- POP-UP -->
-                                                    <!-- <button type="button" class="btn btn-google btn-user btn-block" class="fas fa-download fa-sm text-white-10" data-toggle="modal" data-target=".bd-example-modal-sm">
-                                                        Drop
-                                                    </button>
-                                                    <div  class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
-                                                        <div class="modal-dialog modal-sm" >
-                                                            <div class="modal-content">
-                                                                <form action="3rd Exams.php" method="POST" >
-                                                                    <h3 class="m-0 font-weight-bold text-primary"> Warning !</h3>
-                                                                    <p > Any data releated to this one who you want to delete will be finnaly errased and cant be restored...<br>
-                                                                        Are you sure to delete it ?</p>
-                                                                    <input type="hidden" name="examNum" value= "<?= $ex['0']?>">
-                                                                    <button type="submit" name="del" class="btn btn-google btn-user btn-block" ><i class="fas fa-trash-alt"></i></button>
-                                                                </form>
-                                                            </div>
-                                                        </div>
-                                                    </div> -->
-                                                </th>
-                                                <?php
-                                            }
-                                            ?>
-                                        </tr>
-                                    </tfoot>
-                                    <tbody>
+                                                    
+                                                </td>
+                                            </tr>       
                                         <?php
-                                        foreach($student as $st){
-                                        ?>
-                                        <tr>
-                                            <td><?= $st['id'] ?></td>
-                                            <td><?= $st['name'] ?></td>
-                                            <?php
-                                            foreach($exams as $ex){
-                                            ?>
-                                                <td><?= $st["$ex[0]"] ?></td>
-                                            <?php
                                             }
-                                        }
-                                        ?>
-                                           
-                                        </tr>
-                                        
+                                        ?>  
+
                                     </tbody>
                                 </table>
                             </div>
@@ -445,7 +442,6 @@ $student = $studentController->viewAll3rdStudentExams();
         <i class="fas fa-angle-up"></i>
     </a>
 
-
     <!-- Bootstrap core JavaScript-->
     <script src="../vendor/jquery/jquery.min.js"></script>
     <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -462,115 +458,7 @@ $student = $studentController->viewAll3rdStudentExams();
 
     <!-- Page level custom scripts -->
     <script src="../js/demo/datatables-demo.js"></script>
-    <script>        
-        function getNumber(string) {
-            const num = (/^\d+$/.test(string) && string.charAt(0) !== '0') ? Number(string) : false;
-            return num;
-        }        
-        
-        function myFunction() {
-            var input, filter, table, tr, td, i, txtValue;
-
-            input = document.getElementById("myInput");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("dataTable");
-            tr = table.getElementsByTagName("tr");  
-            
-            if(getNumber(filter)){
-                for (i = 0; i < tr.length; i++) {
-                    td = tr[i].getElementsByTagName("td")[0];
-                    if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        } 
-                        else {
-                            tr[i].style.display = "none";
-                        }
-                    }                    
-                }
-            }
-            
-            else{
-                for (i = 0; i < tr.length; i++) {
-                    td = tr[i].getElementsByTagName("td")[1];
-                    if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        } 
-                        else {
-                            tr[i].style.display = "none";
-                        }
-                    }                        
-                }
-            }
-        }
-    </script>
-    <script>
-    function sortTable(n) {
-        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-        table = document.getElementById("dataTable");
-        switching = true;
-
-        //Set the sorting direction to ascending:
-        dir = "asc"; 
-
-        /*Make a loop that will continue until
-        no switching has been done:*/
-        while (switching) {
-            //start by saying: no switching is done:
-            switching = false;
-            rows = table.rows;
-
-            /*Loop through all table rows (except the
-            first, which contains table headers):*/
-            for (i = 1; i < (rows.length - 1); i++) {
-                    
-                //start by saying there should be no switching:
-                shouldSwitch = false;
-
-                /*Get the two elements you want to compare,
-                one from current row and one from the next:*/
-                x = rows[i].getElementsByTagName("TD")[n];
-                y = rows[i + 1].getElementsByTagName("TD")[n];
-
-                /*check if the two rows should switch place,
-                based on the direction, asc or desc:*/
-                if (dir == "asc") {
-                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                        //if so, mark as a switch and break the loop:
-                        shouldSwitch= true;
-                        break;
-                    }
-                } 
-                else if (dir == "desc") {
-                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                        //if so, mark as a switch and break the loop:
-                        shouldSwitch = true;
-                        break;
-                    }
-                }
-            }
-            if (shouldSwitch) {
-                /*If a switch has been marked, make the switch
-                and mark that a switch has been done:*/
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
-                //Each time a switch is done, increase this count by 1:
-                switchcount ++;      
-            } 
-            else {
-            /*If no switching has been done AND the direction is "asc",
-            set the direction to "desc" and run the while loop again.*/
-                if (switchcount == 0 && dir == "asc") {
-                    dir = "desc";
-                    switching = true;
-                }
-            }
-        }
-    }
-</script>
+    <script src="../js/tableFunc.js"></script>
 
 </body>
 
