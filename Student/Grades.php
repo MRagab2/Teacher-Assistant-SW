@@ -40,11 +40,12 @@ if(isset($_POST["del"])){
 
             if($student_grade->drop_Student_Day()){
 
-                $student_result = $student_grade->view_grades();
-                header('location: Grades.php');
+                // $student_result = $student_grade->view_grades();
+                
+               // header('location: Grades.php');
+               unset($_GET['DEL']);
             }
         }
-        $_GET['DEL'] = 0;
     }
 }
 
@@ -69,7 +70,7 @@ if($student_result){
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>3rd Sec HomeWork</title>
+    <title><?= $_SESSION['year'] ?> Sec <?= $_SESSION['grade_type'].' ('.$_SESSION['center'].') ' ?></title>
 
     <!-- Custom fonts for this template -->
     <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -363,7 +364,7 @@ if($student_result){
                                             foreach($all_days as $day){
                                                 ?>
                                                 <th>
-                                                    <form action="3rd HW Edit.php" method="GET">
+                                                    <form action="Grades Edit.php" method="GET">
                                                         <input type="hidden" name="dayDate" value= "<?php $_SESSION['dayDate'] = $day; echo $day?>">
                                                         <button type="submit" name="edit" class="btn btn-info btn-user btn-block"><i class="fas fa-edit"></i></button>
                                                     </form>
@@ -412,45 +413,55 @@ if($student_result){
                                             <?php
                                             foreach($all_days as $day){
 
-                                                switch($st["$day"]){
+                                                switch($st[$day]){
                                                     case 'A+':
                                                         ?>
-                                                        <td style="background-color:#00ff00; color:black"><?= $st["$day"] ?></td>
+                                                        <td style="background-color:#00ff00; color:black"><?= $st[$day] ?></td>
                                                         <?php
                                                         break;
                                                     case 'A':
                                                         ?>
-                                                        <td style="background-color:#008000; color:white"><?= $st["$day"] ?></td>
+                                                        <td style="background-color:#008000; color:white"><?= $st[$day] ?></td>
                                                         <?php
                                                         break;
                                                     case 'B':
                                                         ?>
-                                                        <td style="background-color:#ffff99; color:black"><?= $st["$day"] ?></td>
+                                                        <td style="background-color:#ffff99; color:black"><?= $st[$day] ?></td>
                                                         <?php
                                                         break;
                                                     case 'C':
                                                         ?>
-                                                        <td style="background-color:#ffff00; color:black"><?= $st["$day"] ?></td>
+                                                        <td style="background-color:#ffff00; color:black"><?= $st[$day] ?></td>
                                                         <?php
                                                         break;
                                                     case 'D':
                                                         ?>
-                                                        <td style="background-color:#ff9933; color:black"><?= $st["$day"] ?></td>
+                                                        <td style="background-color:#ff9933; color:black"><?= $st[$day] ?></td>
                                                         <?php
                                                         break;
                                                     case 'F':
                                                         ?>
-                                                        <td style="background-color:#ff0000; color:black"><?= $st["$day"] ?></td>
+                                                        <td style="background-color:#ff0000; color:black"><?= $st[$day] ?></td>
                                                         <?php
                                                         break;
                                                     case 'No HW':
                                                         ?>
-                                                        <td style="background-color:#333333; color:white"><?= $st["$day"] ?></td>
+                                                        <td style="background-color:#333333; color:white"><?= $st[$day] ?></td>
+                                                        <?php
+                                                        break;
+                                                    case 'Yes':
+                                                        ?>
+                                                        <td style="background-color:green; color:white"><?= $st[$day] ?></td>
+                                                        <?php
+                                                        break;
+                                                    case 'No':
+                                                        ?>
+                                                        <td style="background-color:red; color:white"><?= $st[$day] ?></td>
                                                         <?php
                                                         break;
                                                     default:
                                                         ?>
-                                                        <td><?= $st["$day"] ?></td>
+                                                        <td><?= $st[$day] ?></td>
                                                         <?php
                                                 }
                                             }

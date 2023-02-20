@@ -120,9 +120,9 @@ class Student extends User{
             elseif($this->year == "2nd_math")
                 $this->year = "2nd_mech" ;
             
-            $this->select("`".$this->year."_".$this->center."_".$type."`","`student_id` = ".$this->id , "`".$grade_num."`");
+            $this->select("`".$this->year."_".$this->center."_".$type."`" , "`student_id` = ".$this->id , "`".$grade_num."`");
 
-            $result["$this->year"] = $this->fetch();
+            $result[$this->year] = $this->fetch();
   
                     
             }while($this->year == "2nd_math"); 
@@ -140,7 +140,7 @@ class Student extends User{
             
             $this->select("`".$this->year."_".$this->center."_".$type."`","`student_id` = ".$this->id);
 
-            $result["$this->year"] = $this->fetch();
+            $result[$this->year] = $this->fetch();
 
                 
         }while($this->year == "2nd_math"); 

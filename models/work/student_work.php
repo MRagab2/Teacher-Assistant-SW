@@ -6,7 +6,7 @@ class Student_Work extends DB_Controller{
 
     public $year;
     public $type;   //{quiz_grade , hw_grade , exam_grade , attendance}
-    public $grade;
+    public $grade = NULL;
     public $date;
     public $center;
 
@@ -21,7 +21,7 @@ class Student_Work extends DB_Controller{
     //new day 
     public function new_Student_Day(){
         $this->query("ALTER TABLE `".$this->year."_".$this->center."_".$this->type."`
-                        ADD `".$this->date."` FLOAT NULL AFTER `student_name`");
+                        ADD `".$this->date."` TEXT NULL AFTER `student_name`");
     }
 
     //edit day 

@@ -1,35 +1,51 @@
 <?php
-require_once '../controllers/studentController.php';
-require_once '../models/studentQuizzes.php';
 
-$studentController = new StudentControllers;
-$studentView = $studentController->viewAll3rdStudentQuizzes();
-$studentEntry = $studentController->viewAll3rdStudentQuizzes();
+require_once '../models/user/student.php';
+require_once '../models/work/student_work.php';
+session_start();
 
-$student = new StudentQuizzes;
-$student->day = $_GET['quizDate'];
+$student_grade = new Student_Work();
+$student = new Student();
 
-//$i = 30000;
-if(isset($_POST["saveEdit"])){
-    foreach($studentEntry as $stEntry){
-        if(!empty($_POST[$stEntry['id'].'g'])){
+$student_grade->year   = $_SESSION['year'];
+$student_grade->center = $_SESSION['center'];
+$student_grade->type   = $_SESSION['grade_type'];
+
+$student_result = $student_grade->view_grades();
+
+if(isset($_POST['date'])){
+    
+    $student_grade->date = $_POST['date'];
+    $student_grade->new_Student_Day();
+
+        foreach($student_result as $student_id){
             
-            $student->name  = $stEntry['name'];
-            $student->id    = $stEntry['id'];
-            $student->class = '3rd sec';
-            $student->grade = trim($_POST[$stEntry['id'].'g']);
+            if(!empty($_POST[$student_id['student_id']])){
 
-            if(!$studentController->newStudentQuizzGrade($student)){
-                break ;  
+                $student->id = $student_id['student_id'];
+
+                if($_POST[$student_id['student_id']] != " ")
+                    if(is_numeric(trim($_POST[$student_id['student_id']])))
+                        $student_grade->grade = trim($_POST[$student_id['student_id']]);
+                    else
+                        $student_grade->grade = "'".trim($_POST[$student_id['student_id']])."'";
+                
+
+                // $student_grade->grade = $_POST[$student_id['student_id']] == ' ' ? 'non' : floatval(trim($_POST[$student_id['student_id']]));
+                // $student_grade->grade = trim($student_grade->grade);
+                $student_grade->add_1_grade($student);
             }
         }
-        //$i++;
-    }
+    header("location: Grades.php");    
 }
-if($_GET['edit']){
-    header("location: 3rd Quizzes.php");
+ 
+//Get Dates
+$all_days = array();
+if($student_result){
+    $all_days = array_keys($student_result[0]);
+    $all_days = \array_diff($all_days,['student_name','student_id']);
+    rsort($all_days);
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -42,7 +58,7 @@ if($_GET['edit']){
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>3rd sec Edit '<?= $student->day ?>' Quiz</title>
+    <title><?= $_SESSION['year'] ?> Sec New <?= $_SESSION['grade_type']?></title>
 
     <!-- Custom fonts for this template -->
     <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -263,66 +279,179 @@ if($_GET['edit']){
                 <div class="container-fluid">
 
                     <!-- DataTales Example -->
-                    <form method="POST" action="3rd Quizzes Edit.php?quizDate=<?= $student->day ?>&edit=1">
+                    <form method="POST" action="Grades Add.php">
                         <div class="card shadow mb-4">
                             <div class="card-header py-3">
                                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                                    <h6 class="m-0 font-weight-bold text-primary">Edit '<?= $student->day ?>' Quiz...</h6>
-                                    <button type="submit" class="btn btn-success shadow-sm" name="saveEdit" id="saveEdit">
+                                    <h6 class="m-0 font-weight-bold text-primary">Adding new Quiz...</h6>
+                                    <button type="submit" class="btn btn-success shadow-sm">
                                         <i class="fas fa-check-circle"></i> Save
                                     </button>
-                                    <a href="3rd Quizzes.php" class="d-none d-sm-inline-block btn btn-google shadow-sm">
+                                    
+                                    <a href="Grades.php" class="d-none d-sm-inline-block btn btn-google shadow-sm">
                                         <i class="fas fa-ban"></i> Cancel </a>
                                         
                                 </div>
                             </div>
                             
                             <div class="card-body">
-                            <div class="table-responsive">
-                            <input type="text" id="myInput" onkeyup="myFunction()"
-                                placeholder="Search for.." title="Type in a name"
-                                style=" width: 100%;
-                                        font-size: 16px;
-                                        padding: 12px 20px 12px 40px;
-                                        border: 1px solid #ddd;
-                                        margin-bottom: 12px;">
+                                <div class="table-responsive">
+                                    <input type="text" id="myInput" onkeyup="myFunction()"
+                                        placeholder="Search for.." title="Type in a name"
+                                        style=" width: 100%;
+                                                font-size: 16px;
+                                                padding: 12px 20px 12px 40px;
+                                                border: 1px solid #ddd;
+                                                margin-bottom: 12px;">
 
-                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                         
                                         <thead>
                                             <tr>
                                                 <th onclick="sortTable(0)">ID</th>
                                                 <th>Name</th>
-                                                <th><?= $student->day ?></th>
+                                                <th><input type="text" class="form-control form-control-user"
+                                                            style="min-width: 80px;"
+                                                            id="date" name="date" placeholder="#.#" required></th>
+                                                <?php
+                                                foreach($all_days as $day){
+                                                ?>
+                                                    <th><?= $day ?></th>
+                                                <?php
+                                                }
+                                                ?>
                                                 
                                             </tr>
                                         </thead>
                                        
                                         <tbody>
                                             <?php
-                                            //$i = 30000;
-                                            foreach($studentView as $stView){
-                                            ?>
-                                            <tr>
-                                                <td><?= $stView['id'] ?></td>
-                                                <td><?= $stView['name'] ?></td>
-                                                <?php
-                                                    $student->id = $stView['id'];
-                                                    $student->class = '3rd sec';
-                                                    $studentGrade = $studentController->viewStudentAllQuizzes($student);
-                                                ?>
-                                                <td><input type="text" class="form-control form-control-user"
-                                                        name="<?=$stView['id'].'g'?>" id="<?=$stView['id'].'g'?>" value="<?= trim($studentGrade["$student->day"])?>" 
-                                                            placeholder="Enter Grade" ></td>
-                                            <?php
-                                            //$i++;   
+                                            switch($_SESSION['grade_type']){
+                                                case 'hw_grade':
+                                                    foreach($student_result as $st){
+                                                        ?>
+                                                        <tr>
+                                                            <td><?= $st['student_id'] ?></td>
+                                                            <td><?= $st['student_name'] ?></td>
+                                                            <td>
+                                                                <select  style="border-radius: 25px; width:inherit; height:45px; padding: 10px;"
+                                                                        name="<?=$st['student_id']?>" id="<?=$st['student_id']?>">
+                                                                    <option value=""> Grade </option>
+                                                                    <option style="background-color:#00ff00; color:black">A+</option>
+                                                                    <option style="background-color:#008000; color:white">A</option>
+                                                                    <option style="background-color:#ffff99; color:black">B</option>
+                                                                    <option style="background-color:#ffff00; color:black">C</option>
+                                                                    <option style="background-color:#ff9933; color:black">D</option>
+                                                                    <option style="background-color:#ff0000; color:black">F</option>
+                                                                    <option style="background-color:#333333; color:white">No HW</option>
+                                                                </select>
+                                                            </td>
+                                                        <?php
+                                                            foreach($all_days as $day){
+                                                                if($st[$day] == 'A+'){
+                                                                ?>
+                                                                    <td style="background-color:#00ff00; color:black"><?= $st[$day] ?></td>
+                                                                <?php
+                                                                }
+                                                                else if($st[$day] == 'A'){
+                                                                    ?>
+                                                                        <td style="background-color:#008000; color:white"><?= $st[$day] ?></td>
+                                                                    <?php
+                                                                }
+                                                                else if($st[$day] == 'B'){
+                                                                    ?>
+                                                                        <td style="background-color:#ffff99; color:black"><?= $st[$day] ?></td>
+                                                                    <?php
+                                                                }
+                                                                else if($st[$day] == 'C'){
+                                                                    ?>
+                                                                        <td style="background-color:#ffff00; color:black"><?= $st[$day] ?></td>
+                                                                    <?php
+                                                                }
+                                                                else if($st[$day] == 'D'){
+                                                                    ?>
+                                                                        <td style="background-color:#ff9933; color:black"><?= $st[$day] ?></td>
+                                                                    <?php
+                                                                }
+                                                                else if($st[$day] == 'F'){
+                                                                    ?>
+                                                                        <td style="background-color:#ff0000; color:black"><?= $st[$day] ?></td>
+                                                                    <?php
+                                                                }
+                                                                else if($st[$day] == 'No HW'){
+                                                                    ?>
+                                                                        <td style="background-color:#333333; color:white"><?= $st[$day] ?></td>
+                                                                    <?php
+                                                                }
+                                                                else{
+                                                                ?>
+                                                                    <td><?= $st[$day] ?></td>
+                                                                <?php
+                                                                }                                                                
+                                                            }
+                                                        }
+                                                    break;
+
+                                                case 'attendance':
+                                                    foreach($student_result as $st){
+                                                        ?>
+                                                        <tr>
+                                                            <td><?= $st['student_id'] ?></td>
+                                                            <td><?= $st['student_name'] ?></td>
+                                                            <td>
+                                                                <select style="border-radius: 25px; width:inherit; height:45px; padding: 10px;"
+                                                                        name="<?=$st['student_id']?>" id="<?=$st['student_id']?>">
+                                                                    <option value=""> yes / no </option>
+                                                                    <option style="background-color:green; color:white">Yes</option>
+                                                                    <option style="background-color:red; color:white">No</option>
+                                                                </select>
+                                                            </td>
+                                                        <?php
+                                                            foreach($all_days as $day){
+                                                                switch ($st[$day]) {
+                                                                    case 'Yes':
+                                                                    ?>
+                                                                        <td style="background-color:green; color:white"><?= $st[$day] ?></td>
+                                                                    <?php
+                                                                        break;
+                                                                    case 'No':
+                                                                    ?>
+                                                                        <td style="background-color:red; color:white"><?= $st[$day] ?></td>
+                                                                    <?php
+                                                                        break;
+                                                                    default:
+                                                                    ?>
+                                                                        <td><?= $st[$day] ?></td>
+                                                                    <?php
+                                                                }
+                                                            }
+                                                        }
+                                                    break;
+
+                                                default:
+                                                    foreach($student_result as $st){
+                                                    ?>
+                                                    <tr>
+                                                        <td><?= $st['student_id'] ?></td>
+                                                        <td><?= $st['student_name'] ?></td>
+                                                        
+                                                        <td><input type="text" class="form-control form-control-user"
+                                                                name="<?=$st['student_id']?>" id="<?=$st['student_id']?>" value=" "
+                                                                placeholder="Enter Grade"></td>
+                                                    <?php
+                                                        foreach($all_days as $day){
+                                                        ?>
+                                                            <td><?= $st[$day] ?></td>
+                                                        <?php
+                                                        } 
+                                                    }
                                             }
+                                            
                                             ?>
                                             
                                             </tr>
                                             
-                                        </tbody>
-                                        
+                                        </tbody>                                        
                                     </table>
                                 </div>
                             </div>
@@ -359,7 +488,6 @@ if($_GET['edit']){
     </a>
 
     
-
     <!-- Bootstrap core JavaScript-->
     <script src="../vendor/jquery/jquery.min.js"></script>
     <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -377,116 +505,8 @@ if($_GET['edit']){
 
     <!-- Page level custom scripts -->
     <script src="../js/demo/datatables-demo.js"></script>
-    <script>        
-        function getNumber(string) {
-            const num = (/^\d+$/.test(string) && string.charAt(0) !== '0') ? Number(string) : false;
-            return num;
-        }        
-        
-        function myFunction() {
-            var input, filter, table, tr, td, i, txtValue;
-
-            input = document.getElementById("myInput");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("dataTable");
-            tr = table.getElementsByTagName("tr");  
-            
-            if(getNumber(filter)){
-                for (i = 0; i < tr.length; i++) {
-                    td = tr[i].getElementsByTagName("td")[0];
-                    if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        } 
-                        else {
-                            tr[i].style.display = "none";
-                        }
-                    }                    
-                }
-            }
-            
-            else{
-                for (i = 0; i < tr.length; i++) {
-                    td = tr[i].getElementsByTagName("td")[1];
-                    if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        } 
-                        else {
-                            tr[i].style.display = "none";
-                        }
-                    }                        
-                }
-            }
-        }
-    </script>
-    <script>
-    function sortTable(n) {
-        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-        table = document.getElementById("dataTable");
-        switching = true;
-
-        //Set the sorting direction to ascending:
-        dir = "asc"; 
-
-        /*Make a loop that will continue until
-        no switching has been done:*/
-        while (switching) {
-            //start by saying: no switching is done:
-            switching = false;
-            rows = table.rows;
-
-            /*Loop through all table rows (except the
-            first, which contains table headers):*/
-            for (i = 1; i < (rows.length - 1); i++) {
-                    
-                //start by saying there should be no switching:
-                shouldSwitch = false;
-
-                /*Get the two elements you want to compare,
-                one from current row and one from the next:*/
-                x = rows[i].getElementsByTagName("TD")[n];
-                y = rows[i + 1].getElementsByTagName("TD")[n];
-
-                /*check if the two rows should switch place,
-                based on the direction, asc or desc:*/
-                if (dir == "asc") {
-                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                        //if so, mark as a switch and break the loop:
-                        shouldSwitch= true;
-                        break;
-                    }
-                } 
-                else if (dir == "desc") {
-                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                        //if so, mark as a switch and break the loop:
-                        shouldSwitch = true;
-                        break;
-                    }
-                }
-            }
-            if (shouldSwitch) {
-                /*If a switch has been marked, make the switch
-                and mark that a switch has been done:*/
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
-                //Each time a switch is done, increase this count by 1:
-                switchcount ++;      
-            } 
-            else {
-            /*If no switching has been done AND the direction is "asc",
-            set the direction to "desc" and run the while loop again.*/
-                if (switchcount == 0 && dir == "asc") {
-                    dir = "desc";
-                    switching = true;
-                }
-            }
-        }
-    }
-</script>
     <script src="../js/demo/chart-area-demo.js"></script>
+    <script src="../js/tableFunc.js"></script>
     
 
 </body>

@@ -1,36 +1,52 @@
 <?php
 
-require_once '../controllers/studentController.php';
-require_once '../models/studentHW.php';
+require_once '../models/user/student.php';
+require_once '../models/work/student_work.php';
+session_start();
 
-$studentController = new StudentControllers;
-$studentView = $studentController->viewAll3rdStudentHW();
-$studentEntry = $studentController->viewAll3rdStudentHW();
+$student_grade = new Student_Work();
+$student = new Student();
 
-$student = new StudentHW;
-$student->day = $_GET['dayDate'];
+$student_grade->year   = $_SESSION['year'];
+$student_grade->center = $_SESSION['center'];
+$student_grade->type   = $_SESSION['grade_type'];
 
-//$i = 30000;
+$student->center = $_SESSION['center'];
+$student->year   = $_SESSION['year'];
+
+$student_result = $student_grade->view_grades();
+
+
+$student_grade->date = $_GET['dayDate'];       
+
 if(isset($_POST["saveEdit"])){
-    foreach($studentEntry as $stEntry){
-        if(!empty($_POST[$stEntry['id'].'h'])){
+    foreach($student_result as $student_id){
 
-            $student->name  = $stEntry['name'];
-            $student->id    = $stEntry['id'];
-            $student->class = '3rd sec';
-            $student->grade    = $_POST[$stEntry['id'].'h'];
+        if(!empty($_POST[$student_id['student_id']])){
 
-            if(!$studentController->newStudentHWDay($student)){
-                break ;  
-            }
-        }
-        //$i++;
+            $student->id  = $student_id['student_id'];
+
+            if($_POST[$student_id['student_id']] != " ")
+                if(is_numeric(trim($_POST[$student_id['student_id']])))
+                    $student_grade->grade = trim($_POST[$student_id['student_id']]);
+                else
+                    $student_grade->grade = "'".trim($_POST[$student_id['student_id']])."'";
+                
+            $student_grade->add_1_grade($student);
+        }        
     }
 }
 if($_GET['edit']){
-    header("location: 3rd HW.php");
+    header("location: Grades.php");
 }
-
+ 
+//Get Dates
+$all_days = array();
+if($student_result){
+    $all_days = array_keys($student_result[0]);
+    $all_days = \array_diff($all_days,['student_name','student_id',$_GET['dayDate']]);
+    rsort($all_days);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -43,7 +59,7 @@ if($_GET['edit']){
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>3rd sec Edit '<?= $student->day ?>' HomeWork</title>
+    <title><?= $_SESSION['year'] ?> Sec Edit '<?= $_GET['dayDate']."'s ".$_SESSION['grade_type'] ?> Attendance</title>
 
     <!-- Custom fonts for this template -->
     <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -105,8 +121,8 @@ if($_GET['edit']){
                     <div class="bg-white py-2 collapse-inner rounded">
                         <a class="collapse-item"        href="3rd Data.php">Data</a>
                         <a class="collapse-item"        href="3rd Quizzes.php">Quizzes</a>
-                        <a class="collapse-item active" href="3rd HW.php">HomeWork</a>
-                        <a class="collapse-item"        href="3rd Attendance.php">Attendance</a>
+                        <a class="collapse-item"        href="3rd HW.php">HomeWork</a>
+                        <a class="collapse-item active" href="3rd Attendance.php">Attendance</a>
                         <a class="collapse-item"        href="3rd Exams.php">Exams</a>
                         <!-- <a class="collapse-item"        href="">Notes</a> -->
                     </div>
@@ -263,15 +279,15 @@ if($_GET['edit']){
                 <div class="container-fluid">
 
                     <!-- DataTales Example -->
-                    <form method="POST" action="3rd HW Edit.php?dayDate=<?= $student->day ?>&edit=1">
+                    <form method="POST" action="Grades Edit.php?dayDate=<?= $_GET['dayDate'] ?>&edit=1">
                         <div class="card shadow mb-4">
                             <div class="card-header py-3">
                                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                                    <h6 class="m-0 font-weight-bold text-primary">Edit '<?= $student->day ?>' HomeWork...</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Edit '<?= $_GET['dayDate'] ?>'s <?= $_SESSION['grade_type']?>...</h6>
                                     <button type="submit" class="btn btn-success shadow-sm" name="saveEdit" id="saveEdit">
                                         <i class="fas fa-check-circle"></i> Save
                                     </button>
-                                    <a href="3rd HW.php" class="d-none d-sm-inline-block btn btn-google shadow-sm">
+                                    <a href="Grades.php" class="d-none d-sm-inline-block btn btn-google shadow-sm">
                                         <i class="fas fa-ban"></i> Cancel </a>
                                         
                                 </div>
@@ -293,154 +309,186 @@ if($_GET['edit']){
                                             <tr>
                                                 <th onclick="sortTable(0)">ID</th>
                                                 <th>Name</th>
-                                                <th><?= $student->day ?></th>
-                                                
+                                                <th><?= $_GET['dayDate'] ?></th>
+                                                <?php
+                                            foreach($all_days as $day){
+                                                ?>
+                                                    <th><?= $day ?></th>
+                                                <?php
+                                            }
+                                            ?>
                                             </tr>
                                         </thead>
                                        
                                         <tbody>
                                             <?php
-                                            //$i = 30000;
-                                            foreach($studentView as $stView){
+                                            foreach($student_result as $st){
                                             ?>
                                             <tr>
-                                                <td><?= $stView['id'] ?></td>
-                                                <td><?= $stView['name'] ?></td>
+                                                <td><?= $st['student_id'] ?></td>
+                                                <td><?= $st['student_name'] ?></td>
                                                 <?php
-                                                    $student->id = $stView['id'];
-                                                    $student->class = '3rd sec';
-                                                    $studentGrade = $studentController->viewStudentAllHW($student);
+                                                    $student->id = $st['student_id'];
+                                                    
+                                                    $single_result = $student->view_1_Student_1_Grade($_SESSION['grade_type'],$_GET['dayDate']);
                                                 ?>
-                                                <td style="color:black; background-color:
+                                                <td style="color:white; background-color:
                                                         <?php
-                                                            if(trim($studentGrade["$student->day"]) == "A+")
+                                                        foreach($single_result as $sr)
+                                                            switch (trim($sr[$_GET['dayDate']])) {
+                                                                case 'A+':
                                                                     echo '#00ff00';
-                                                            elseif(trim($studentGrade["$student->day"]) == "A")
+                                                                    break;
+                                                                case 'A':
                                                                     echo '#008000';
-                                                            elseif(trim($studentGrade["$student->day"]) == "B")
+                                                                    break;
+                                                                case 'B':
                                                                     echo '#ffff99';
-                                                            elseif(trim($studentGrade["$student->day"]) == "C")
+                                                                    break;
+                                                                case 'C':
                                                                     echo '#ffff00';
-                                                            elseif(trim($studentGrade["$student->day"]) == "D")
+                                                                    break;
+                                                                case 'D':
                                                                     echo '#ff9933';
-                                                            elseif(trim($studentGrade["$student->day"]) == "F")
+                                                                    break;
+                                                                case 'F':
                                                                     echo '#ff0000';
-                                                                else
+                                                                    break;
+                                                                case 'Yes':
+                                                                    echo 'green';
+                                                                    break;
+                                                                case 'No':
+                                                                    echo 'red';
+                                                                    break;
+                                                                default:
                                                                     echo 'white'; 
+                                                            }                                                                    
                                                         ?>
-                                                ">                                                                    
-                                                    <select  style="border-radius: 25px; width:inherit; height:45px; padding: 10px;"                                                                                                                                        
-                                                            name="<?=$stView['id'].'h'?>" id="<?=$stView['id'].'h'?>">
-                                                            <option value=" "> Grade </option>
-                                                            <?php
-                                                                if(trim($studentGrade["$student->day"]) == "A+"){
-                                                            ?>
-                                                                    <option style="background-color:#00ff00; color:black" selected>
-                                                                        A+</option>
-                                                            <?php 
-                                                                }
-                                                                else{
-                                                            ?>
-                                                                    <option style="background-color:#00ff00; color:black" >
-                                                                        A+</option>
-                                                            <?php
-                                                                }
-                                                                if(trim($studentGrade["$student->day"]) == "A"){
-                                                            ?>
-                                                                    <option style="background-color:#008000; color:white" selected>
-                                                                        A</option>
-                                                            <?php 
-                                                                        }
-                                                                else{
-                                                            ?>
-                                                                    <option style="background-color:#008000; color:white" >
-                                                                        A</option>
-                                                            <?php
-                                                                }
-                                                                if(trim($studentGrade["$student->day"]) == "B"){
-                                                                ?>
-                                                                    <option style="background-color:#ffff99; color:black" selected>
-                                                                        B</option>
-                                                                <?php 
-                                                                }
-                                                                else{
-                                                                ?>
-                                                                    <option style="background-color:#ffff99; color:black" >
-                                                                        B</option>
+                                                    ">     
+                                                        <?php 
+                                                        switch ($_SESSION['grade_type']){
+                                                            case 'attendance':
+                                                        ?>
+                                                            <select style="border-radius: 25px; width:inherit; height:45px; padding: 10px;"                                                                                                                                        
+                                                                    name="<?=$st['student_id']?>" id="<?= $st['student_id']?>">
+
+                                                                <option value=" "> yes / no </option>
                                                                 <?php
-                                                                }
-                                                                if(trim($studentGrade["$student->day"]) == "C"){
+                                                                    foreach($single_result as $sr)
                                                                 ?>
-                                                                    <option style="background-color:#ffff00; color:black" selected>
-                                                                        C</option>
-                                                                <?php 
-                                                                }
-                                                                else{
-                                                                ?>
-                                                                    <option style="background-color:#ffff00; color:black" >
-                                                                        C</option>
-                                                                <?php
-                                                                }
-                                                                if(trim($studentGrade["$student->day"]) == "D"){
-                                                                ?>
-                                                                    <option style="background-color:#ff9933; color:black" selected>
-                                                                        D</option>
-                                                                <?php 
-                                                                }
-                                                                else{
-                                                                ?>
-                                                                    <option style="background-color:#ff9933; color:black" >
-                                                                        D</option>
-                                                                <?php
-                                                                }
-                                                                if(trim($studentGrade["$student->day"]) == "F"){
-                                                            ?>
-                                                                    <option style="background-color:#ff0000; color:black" selected>
-                                                                        F</option>
-                                                            <?php 
-                                                                }
-                                                                else{
-                                                            ?>
-                                                                    <option style="background-color:#ff0000; color:black" >
-                                                                        F</option>
-                                                            <?php
-                                                                }
-                                                                if($studentGrade["$student->day"] == "No HW"){
-                                                            ?>
-                                                                    <option style="background-color:#333333; color:white" selected>No HW"</option>
-                                                            <?php 
-                                                                }
-                                                                else{
-                                                            ?>
-                                                                    <option style="background-color:#333333; color:white" >No HW</option>
-                                                            <?php
-                                                                }
-                                                            ?>
+                                                                <option style="background-color:green; color:white" <?= trim($sr[$_GET['dayDate']]) == 'Yes' ? 'selected':'' ?>>
+                                                                    Yes</option>
                                                         
+                                                                <option style="background-color:red; color:white" <?= trim($sr[$_GET['dayDate']]) == 'No' ? 'selected':'' ?>>
+                                                                    No</option>
+                                                        <?php
+                                                                break;
+                                                            case 'hw_grade':
+                                                        ?>
+                                                            <select style="border-radius: 25px; width:inherit; height:45px; padding: 10px;"                                                                                                                                        
+                                                                    name="<?=$st['student_id']?>" id="<?= $st['student_id']?>">
+                                                                
+                                                                <option value=" "> Grade </option>
+                                                                <option style="background-color:#00ff00; color:black" <?= trim($sr[$_GET['dayDate']]) == 'A+' ? 'selected':'' ?>>
+                                                                        A+</option>
+                                                                <option style="background-color:#008000; color:white" <?= trim($sr[$_GET['dayDate']]) == 'A' ? 'selected':'' ?>>
+                                                                        A</option>
+                                                                <option style="background-color:#ffff99; color:black" <?= trim($sr[$_GET['dayDate']]) == 'B' ? 'selected':'' ?>>
+                                                                        B</option>
+                                                                <option style="background-color:#ffff00; color:black" <?= trim($sr[$_GET['dayDate']]) == 'C' ? 'selected':'' ?>>
+                                                                        C</option>
+                                                                <option style="background-color:#ff9933; color:black" <?= trim($sr[$_GET['dayDate']]) == 'D' ? 'selected':'' ?>>
+                                                                        D</option>
+                                                                <option style="background-color:#ff0000; color:black" <?= trim($sr[$_GET['dayDate']]) == 'F' ? 'selected':'' ?>>
+                                                                        F</option>
+                                                                <option style="background-color:#333333; color:white" <?= trim($sr[$_GET['dayDate']]) == 'No HW' ? 'selected':'' ?>>
+                                                                        No HW</option>
+                                                        <?php
+                                                                break;
+                                                            default:
+                                                        ?>
+                                                            <input type="text" class="form-control form-control-user"
+                                                                    name="<?=$st['student_id']?>" id="<?= $st['student_id']?>" value="<?= trim($sr[$_GET['dayDate']])?>" 
+                                                                    placeholder="Enter Grade" >
+                                                    <?php
+
+                                                    }
+                                                    ?>
+                                                            
+                                                            
                                                     </select>
                                                 </td>
                                             <?php
-                                            //$i++;   
+                                                foreach($all_days as $day){
+
+                                                    switch($st[$day]){
+                                                        case 'A+':
+                                                            ?>
+                                                            <td style="background-color:#00ff00; color:black"><?= $st[$day] ?></td>
+                                                            <?php
+                                                            break;
+                                                        case 'A':
+                                                            ?>
+                                                            <td style="background-color:#008000; color:white"><?= $st[$day] ?></td>
+                                                            <?php
+                                                            break;
+                                                        case 'B':
+                                                            ?>
+                                                            <td style="background-color:#ffff99; color:black"><?= $st[$day] ?></td>
+                                                            <?php
+                                                            break;
+                                                        case 'C':
+                                                            ?>
+                                                            <td style="background-color:#ffff00; color:black"><?= $st[$day] ?></td>
+                                                            <?php
+                                                            break;
+                                                        case 'D':
+                                                            ?>
+                                                            <td style="background-color:#ff9933; color:black"><?= $st[$day] ?></td>
+                                                            <?php
+                                                            break;
+                                                        case 'F':
+                                                            ?>
+                                                            <td style="background-color:#ff0000; color:black"><?= $st[$day] ?></td>
+                                                            <?php
+                                                            break;
+                                                        case 'No HW':
+                                                            ?>
+                                                            <td style="background-color:#333333; color:white"><?= $st[$day] ?></td>
+                                                            <?php
+                                                            break;
+                                                        case 'Yes':
+                                                            ?>
+                                                            <td style="background-color:green; color:white"><?= $st[$day] ?></td>
+                                                            <?php
+                                                            break;
+                                                        case 'No':
+                                                            ?>
+                                                            <td style="background-color:red; color:white"><?= $st[$day] ?></td>
+                                                            <?php
+                                                            break;
+                                                        default:
+                                                            ?>
+                                                            <td><?= $st[$day] ?></td>
+                                                            <?php
+                                                    }
+                                                }
                                             }
                                             ?>
                                             
                                             </tr>
                                             
-                                        </tbody>
-                                        
+                                        </tbody>                                        
                                     </table>
                                 </div>
                             </div>
                         </div>
                     </form>
                 </div>
-                <!-- /.container-fluid -->
-
-                
+                <!-- /.container-fluid -->                
 
             </div>
-            <!-- End of Main Content -->
-            
+            <!-- End of Main Content -->            
 
             <!-- Footer -->
             <footer class="sticky-footer bg-white">
@@ -481,117 +529,8 @@ if($_GET['edit']){
 
     <!-- Page level custom scripts -->
     <script src="../js/demo/datatables-demo.js"></script>
-    <script>        
-        function getNumber(string) {
-            const num = (/^\d+$/.test(string) && string.charAt(0) !== '0') ? Number(string) : false;
-            return num;
-        }        
-        
-        function myFunction() {
-            var input, filter, table, tr, td, i, txtValue;
-
-            input = document.getElementById("myInput");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("dataTable");
-            tr = table.getElementsByTagName("tr");  
-            
-            if(getNumber(filter)){
-                for (i = 0; i < tr.length; i++) {
-                    td = tr[i].getElementsByTagName("td")[0];
-                    if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        } 
-                        else {
-                            tr[i].style.display = "none";
-                        }
-                    }                    
-                }
-            }
-            
-            else{
-                for (i = 0; i < tr.length; i++) {
-                    td = tr[i].getElementsByTagName("td")[1];
-                    if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        } 
-                        else {
-                            tr[i].style.display = "none";
-                        }
-                    }                        
-                }
-            }
-        }
-    </script>
-    <script>
-    function sortTable(n) {
-        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-        table = document.getElementById("dataTable");
-        switching = true;
-
-        //Set the sorting direction to ascending:
-        dir = "asc"; 
-
-        /*Make a loop that will continue until
-        no switching has been done:*/
-        while (switching) {
-            //start by saying: no switching is done:
-            switching = false;
-            rows = table.rows;
-
-            /*Loop through all table rows (except the
-            first, which contains table headers):*/
-            for (i = 1; i < (rows.length - 1); i++) {
-                    
-                //start by saying there should be no switching:
-                shouldSwitch = false;
-
-                /*Get the two elements you want to compare,
-                one from current row and one from the next:*/
-                x = rows[i].getElementsByTagName("TD")[n];
-                y = rows[i + 1].getElementsByTagName("TD")[n];
-
-                /*check if the two rows should switch place,
-                based on the direction, asc or desc:*/
-                if (dir == "asc") {
-                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                        //if so, mark as a switch and break the loop:
-                        shouldSwitch= true;
-                        break;
-                    }
-                } 
-                else if (dir == "desc") {
-                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                        //if so, mark as a switch and break the loop:
-                        shouldSwitch = true;
-                        break;
-                    }
-                }
-            }
-            if (shouldSwitch) {
-                /*If a switch has been marked, make the switch
-                and mark that a switch has been done:*/
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
-                //Each time a switch is done, increase this count by 1:
-                switchcount ++;      
-            } 
-            else {
-            /*If no switching has been done AND the direction is "asc",
-            set the direction to "desc" and run the while loop again.*/
-                if (switchcount == 0 && dir == "asc") {
-                    dir = "desc";
-                    switching = true;
-                }
-            }
-        }
-    }
-</script>
     <script src="../js/demo/chart-area-demo.js"></script>
-    
+    <script src="../js/tableFunc.js"></script>    
 
 </body>
 
