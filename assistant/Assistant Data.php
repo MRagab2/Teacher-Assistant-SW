@@ -1,18 +1,21 @@
 <?php
 
-require_once '../controllers/assisController.php';
-require_once '../models/assisData.php';
+require_once '../models/user/assistant.php';
+session_start();
 
+$assistant = new Assistant;
 
-$assisController = new AssisController;
-$a = new AssisData;
+if(isset($_POST["del"]))
+{
+    if($_GET['DEL']==2)
+    {
+        if(!empty($_POST["assisID"]))
+        {
+            $assistant->id = $_POST["assisID"];
 
-if(isset($_POST["del"])){
-    if($_GET['DEL']==2){
-        if(!empty($_POST["assisID"])){
-            $a->id = $_POST["assisID"];
-            if($assisController->deleteAssistantData($a)){
-                $assis = $assisController->viewAllAssistantData();
+            if($assistant->delete_Assistant())
+            {
+                $assistant_result = $assistant->view_All_Assistant();
                 header('location: Assistant Data.php');
             }
         }
@@ -20,7 +23,7 @@ if(isset($_POST["del"])){
     }
 }
 
-$assis = $assisController->viewAllAssistantData();
+$assistant_result = $assistant->view_All_Assistant();
 
 ?>
 <!DOCTYPE html>
@@ -215,7 +218,7 @@ $assis = $assisController->viewAllAssistantData();
             </li>
             <!-- Nav Item - Tables -->
             <li class="nav-item ">
-                <a class="nav-link" href="Assistant Availability.php">
+                <a class="nav-link" href="Availability.php">
                     <i class="far fa-calendar-alt"></i>
                     <span>Assistants Availability</span></a>
             </li>
@@ -278,9 +281,7 @@ $assis = $assisController->viewAllAssistantData();
                                         <tr>
                                             <th onclick="sortTable(0)">ID</th>
                                             <th>Name</th>
-                                            <th>Location</th>
-                                            <th>Num. 1</th>
-                                            <th>Num. 2</th>
+                                            <th>Phone Num</th>
                                             <th>Edit</th>
                                             
                                         </tr>
@@ -288,18 +289,16 @@ $assis = $assisController->viewAllAssistantData();
                                     
                                     <tbody>
                                         <?php
-                                            foreach($assis as $a){
+                                            foreach($assistant_result as $ass){
                                         ?>
                                         <tr>
-                                            <td> <?= $a['id'] ?></td>
-                                            <td><a href="<?= $a['facebook acc'] ?>"> <?= $a['name'] ?> </a></td>
-                                            <td><?= $a['location'] ?></td>
-                                            <td><?= $a['num1'] ?></td>
-                                            <td><?= $a['num2'] ?></td>
+                                            <td><?= $ass['id'] ?></td>
+                                            <td><?= $ass['name'] ?></td>                                            
+                                            <td><?= $ass['phone'] ?></td>
                                             <td>
                                                 <form action="Assistant Data Edit.php" method="GET">
-                                                    <input type="hidden" name="assisID" value= "<?= $a['id']?>">
-                                                    <button type="submit" name="edit" class="btn btn-info btn-user btn-block" ><i class="fas fa-user-edit"></i></button>
+                                                    <input type="hidden" name="assistant_id" value= "<?= $ass['id'] ?> ">
+                                                    <button type="submit" name="" class="btn btn-info btn-user btn-block" ><i class="fas fa-user-edit"></i></button>
                                                 </form>
                                                 <hr>
                                                 <?php
@@ -307,7 +306,7 @@ $assis = $assisController->viewAllAssistantData();
                                                         if($_GET['DEL']==1){
                                                     ?>
                                                     <form action="Assistant Data.php?DEL=2" method="POST" >                                                        
-                                                        <input type="hidden" name="assisID" value= "<?= $a['id']?>">
+                                                        <input type="hidden" name="assisID" value= "<?= $ass['id']?>">
                                                         <button type="submit" name="del" class="btn btn-google btn-user btn-block" ><i class="fas fa-trash-alt"></i></button>
                                                     </form>
                                                     <?php
@@ -315,7 +314,7 @@ $assis = $assisController->viewAllAssistantData();
                                                         else{
                                                             ?>
                                                             <form action="Assistant Data.php?DEL=1" method="POST" >
-                                                                <input type="hidden" name="assisID" value= "<?= $a['id']?>">
+                                                                <input type="hidden" name="assisID" value= "<?= $ass['id']?>">
                                                                 <button type="submit" name="del" class="btn btn-google btn-user btn-block" ><i class="fas fa-trash-alt"></i></button>
                                                             </form>
                                                         <?php
@@ -324,28 +323,13 @@ $assis = $assisController->viewAllAssistantData();
                                                     else{
                                                     ?>
                                                         <form action="Assistant Data.php?DEL=1" method="POST" >
-                                                            <input type="hidden" name="assisID" value= "<?= $a['id']?>">
+                                                            <input type="hidden" name="assisID" value= "<?= $ass['id']?>">
                                                             <button type="submit" name="del" class="btn btn-google btn-user btn-block" ><i class="fas fa-trash-alt"></i></button>
                                                         </form>
                                                     <?php
                                                     }
                                                     ?>
-                                                <!-- <button type="button" class="btn btn-google btn-user btn-block" data-toggle="modal" data-target=".bd-example-modal-sm">
-                                                        Delete
-                                                </button>
-                                                <div  class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
-                                                    <div class="modal-dialog modal-sm" >
-                                                        <div class="modal-content">
-                                                            <form action="Assistant Data.php" method="POST" >
-                                                                <h3 class="m-0 font-weight-bold text-primary"> Warning !</h3>
-                                                                <p > Any data releated to this one who you want to delete will be finnaly errased and cant be restored...<br>
-                                                                    Are you sure to delete it ?</p>
-                                                                <input type="hidden" name="assisID" value= "<?= $a['id']?>">
-                                                                <button type="submit" name="del" class="btn btn-google btn-user btn-block" class="fas fa-download fa-sm text-white-10"> Delete</button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div> -->
+                                                
                                                 
                                             </td>
                                         </tr>
@@ -402,115 +386,7 @@ $assis = $assisController->viewAllAssistantData();
 
     <!-- Page level custom scripts -->
     <script src="../js/demo/datatables-demo.js"></script>
-    <script>        
-        function getNumber(string) {
-            const num = (/^\d+$/.test(string) && string.charAt(0) !== '0') ? Number(string) : false;
-            return num;
-        }        
-        
-        function myFunction() {
-            var input, filter, table, tr, td, i, txtValue;
-
-            input = document.getElementById("myInput");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("dataTable");
-            tr = table.getElementsByTagName("tr");  
-            
-            if(getNumber(filter)){
-                for (i = 0; i < tr.length; i++) {
-                    td = tr[i].getElementsByTagName("td")[0];
-                    if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        } 
-                        else {
-                            tr[i].style.display = "none";
-                        }
-                    }                    
-                }
-            }
-            
-            else{
-                for (i = 0; i < tr.length; i++) {
-                    td = tr[i].getElementsByTagName("td")[1];
-                    if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        } 
-                        else {
-                            tr[i].style.display = "none";
-                        }
-                    }                        
-                }
-            }
-        }
-    </script>
-    <script>
-    function sortTable(n) {
-        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-        table = document.getElementById("dataTable");
-        switching = true;
-
-        //Set the sorting direction to ascending:
-        dir = "asc"; 
-
-        /*Make a loop that will continue until
-        no switching has been done:*/
-        while (switching) {
-            //start by saying: no switching is done:
-            switching = false;
-            rows = table.rows;
-
-            /*Loop through all table rows (except the
-            first, which contains table headers):*/
-            for (i = 1; i < (rows.length - 1); i++) {
-                    
-                //start by saying there should be no switching:
-                shouldSwitch = false;
-
-                /*Get the two elements you want to compare,
-                one from current row and one from the next:*/
-                x = rows[i].getElementsByTagName("TD")[n];
-                y = rows[i + 1].getElementsByTagName("TD")[n];
-
-                /*check if the two rows should switch place,
-                based on the direction, asc or desc:*/
-                if (dir == "asc") {
-                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                        //if so, mark as a switch and break the loop:
-                        shouldSwitch= true;
-                        break;
-                    }
-                } 
-                else if (dir == "desc") {
-                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                        //if so, mark as a switch and break the loop:
-                        shouldSwitch = true;
-                        break;
-                    }
-                }
-            }
-            if (shouldSwitch) {
-                /*If a switch has been marked, make the switch
-                and mark that a switch has been done:*/
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
-                //Each time a switch is done, increase this count by 1:
-                switchcount ++;      
-            } 
-            else {
-            /*If no switching has been done AND the direction is "asc",
-            set the direction to "desc" and run the while loop again.*/
-                if (switchcount == 0 && dir == "asc") {
-                    dir = "desc";
-                    switching = true;
-                }
-            }
-        }
-    }
-</script>
+    <script src="../js/tableFunc.js"></script>
 
 </body>
 

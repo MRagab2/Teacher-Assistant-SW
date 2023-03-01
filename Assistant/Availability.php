@@ -1,10 +1,10 @@
 <?php
-require_once '../controllers/assisController.php';
-require_once '../models/assisAvailability.php';
+require_once '../models/user/assistant.php';
+session_start();
 
-$assisController = new AssisController;
+$ass_availability = new Assistant;
 
-$assis = $assisController->viewAllAssistantAvailability();
+$assistant_result = $ass_availability->view_All_Availability();
 
 ?>
 <!DOCTYPE html>
@@ -199,7 +199,7 @@ $assis = $assisController->viewAllAssistantAvailability();
             </li>
              <!-- Nav Item - Tables -->
              <li class="nav-item active">
-                <a class="nav-link" href="Assistant Availability.php">
+                <a class="nav-link" href="Availability.php">
                     <i class="far fa-calendar-alt"></i>
                     <span>Assistants Availability</span></a>
             </li>
@@ -274,106 +274,66 @@ $assis = $assisController->viewAllAssistantAvailability();
                                     
                                     <tbody>
                                         <?php
-                                            foreach($assis as $a){
+                                            foreach($assistant_result as $ass){
+                                                $ass_availability->id = $ass['assistant_id'];
+                                                $ass_result = $ass_availability->view_1_Assistant()
                                         ?>
                                             
-                                        <tr>
-                                            <td> <?= $a['id'] ?></td>
-                                            <td> <?= $a['name'] ?></td>
+                                        <tr>                                            
+                                            <td> <?= $ass['assistant_id'] ?></td>
+                                            <td> <?= $ass_result['name'] ?></td>
                                             <!--Saturday-->
-                                            <?php
-                                            if( $a['sat']=='no' || $a['sat']=='No' || $a['sat']=='nO' || $a['sat']=='NO'){
-                                            ?>
-                                                <td style="background-color:red; color:white"> <?= $a['sat'] ?></td>
-                                            <?php
-                                            }
-                                            else{
-                                            ?>
-                                                <td style="background-color:green; color:white"> <?= $a['sat'] ?></td>
-                                            <?php
-                                            }
-                                            ?>
+                                        <?php
+                                                $bg_color = $ass['sat']? 'green' :'red';
+                                                $availability = $ass['sat']? 'OK' :'NO';
+                                        ?>
+                                            <td style="background-color:<?= $bg_color ?>; color:white"> <?= $availability ?></td>
+                                            
                                             <!--Sunday-->
-                                            <?php
-                                            if( $a['sun']=='no' || $a['sun']=='No' || $a['sun']=='nO' || $a['sun']=='NO'){
-                                            ?>
-                                                <td style="background-color:red; color:white"> <?= $a['sun'] ?></td>
-                                            <?php
-                                            }
-                                            else{
-                                            ?>
-                                                <td style="background-color:green; color:white"> <?= $a['sun'] ?></td>
-                                            <?php
-                                            }
-                                            ?>
+                                        <?php
+                                                $bg_color = $ass['sun']? 'green' :'red';
+                                                $availability = $ass['sun']? 'OK' :'NO';
+                                        ?>
+                                            <td style="background-color:<?= $bg_color ?>; color:white"> <?= $availability ?></td>
+                                            
                                             <!--Monday-->
-                                            <?php
-                                            if( $a['mon']=='no' || $a['mon']=='No' || $a['mon']=='nO' || $a['mon']=='NO'){
-                                            ?>
-                                                <td style="background-color:red; color:white"> <?= $a['mon'] ?></td>
-                                            <?php
-                                            }
-                                            else{
-                                            ?>
-                                                <td style="background-color:green; color:white"> <?= $a['mon'] ?></td>
-                                            <?php
-                                            }
-                                            ?>
+                                        <?php
+                                                $bg_color = $ass['mon']? 'green' :'red';
+                                                $availability = $ass['mon']? 'OK' :'NO';
+                                        ?>
+                                            <td style="background-color:<?= $bg_color ?>; color:white"> <?= $availability ?></td>
+                                            
                                             <!--Tuesday-->
-                                            <?php
-                                            if( $a['tue']=='no' || $a['tue']=='No' || $a['tue']=='nO' || $a['tue']=='NO'){
-                                            ?>
-                                                <td style="background-color:red; color:white"> <?= $a['tue'] ?></td>
-                                            <?php
-                                            }
-                                            else{
-                                            ?>
-                                                <td style="background-color:green; color:white"> <?= $a['tue'] ?></td>
-                                            <?php
-                                            }
-                                            ?>
+                                        <?php
+                                                $bg_color = $ass['tue']? 'green' :'red';
+                                                $availability = $ass['tue']? 'OK' :'NO';
+                                        ?>
+                                            <td style="background-color:<?= $bg_color ?>; color:white"> <?= $availability ?></td>
+                                            
                                             <!--Wednesday-->
-                                            <?php
-                                            if( $a['wed']=='no' || $a['wed']=='No' || $a['wed']=='nO' || $a['wed']=='NO'){
+                                        <?php
+                                                $bg_color = $ass['wed']? 'green' :'red';
+                                                $availability = $ass['wed']? 'OK' :'NO';
                                             ?>
-                                                <td style="background-color:red; color:white"> <?= $a['wed'] ?></td>
-                                            <?php
-                                            }
-                                            else{
-                                            ?>
-                                                <td style="background-color:green; color:white"> <?= $a['wed'] ?></td>
-                                            <?php
-                                            }
-                                            ?>
+                                            <td style="background-color:<?= $bg_color ?>; color:white"> <?= $availability ?></td>
+                                            
                                             <!--Thuresday-->
-                                            <?php
-                                            if( $a['thu']=='no' || $a['thu']=='No' || $a['thu']=='nO' || $a['thu']=='NO'){
-                                            ?>
-                                                <td style="background-color:red; color:white"> <?= $a['thu'] ?></td>
-                                            <?php
-                                            }
-                                            else{
-                                            ?>
-                                                <td style="background-color:green; color:white"> <?= $a['thu'] ?></td>
-                                            <?php
-                                            }
-                                            ?>
+                                        <?php
+                                                $bg_color = $ass['thu']? 'green' :'red';
+                                                $availability = $ass['thu']? 'OK' :'NO';
+                                        ?>
+                                            <td style="background-color:<?= $bg_color ?>; color:white"> <?= $availability ?></td>
+                                            
                                             <!--Friday-->
-                                            <?php
-                                            if( $a['fri']=='no' || $a['fri']=='No' || $a['fri']=='nO' || $a['fri']=='NO'){
-                                            ?>
-                                                <td style="background-color:red; color:white"> <?= $a['fri'] ?></td>
-                                            <?php
-                                            }
-                                            else{
-                                            ?>
-                                                <td style="background-color:green; color:white"> <?= $a['fri'] ?></td>
-                                            <?php
-                                            }
-                                            ?>
+                                        <?php
+                                                $bg_color = $ass['fri']? 'green' :'red';
+                                                $availability = $ass['fri']? 'OK' :'NO';
+                                        ?>
+                                            <td style="background-color:<?= $bg_color ?>; color:white"> <?= $availability ?></td>
+                                            
                                             <th>
-                                                <form action="Assistant Availability Edit.php" method="GET">
-                                                    <input type="hidden" name="assisID" value= "<?= $a['id']?>">
+                                                <form action="Availability Edit.php" method="GET">
+                                                    <input type="hidden" name="assistant_id" value= "<?= $ass['assistant_id']?>">
                                                     <button type="submit" name="edit" class="btn btn-info btn-user btn-block"><i class="fas fa-edit"></i></button>
                                                 </form>
                                             </th>
@@ -432,115 +392,7 @@ $assis = $assisController->viewAllAssistantAvailability();
 
     <!-- Page level custom scripts -->
     <script src="../js/demo/datatables-demo.js"></script>
-    <script>        
-        function getNumber(string) {
-            const num = (/^\d+$/.test(string) && string.charAt(0) !== '0') ? Number(string) : false;
-            return num;
-        }        
-        
-        function myFunction() {
-            var input, filter, table, tr, td, i, txtValue;
-
-            input = document.getElementById("myInput");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("dataTable");
-            tr = table.getElementsByTagName("tr");  
-            
-            if(getNumber(filter)){
-                for (i = 0; i < tr.length; i++) {
-                    td = tr[i].getElementsByTagName("td")[0];
-                    if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        } 
-                        else {
-                            tr[i].style.display = "none";
-                        }
-                    }                    
-                }
-            }
-            
-            else{
-                for (i = 0; i < tr.length; i++) {
-                    td = tr[i].getElementsByTagName("td")[1];
-                    if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        } 
-                        else {
-                            tr[i].style.display = "none";
-                        }
-                    }                        
-                }
-            }
-        }
-    </script>
-    <script>
-    function sortTable(n) {
-        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-        table = document.getElementById("dataTable");
-        switching = true;
-
-        //Set the sorting direction to ascending:
-        dir = "asc"; 
-
-        /*Make a loop that will continue until
-        no switching has been done:*/
-        while (switching) {
-            //start by saying: no switching is done:
-            switching = false;
-            rows = table.rows;
-
-            /*Loop through all table rows (except the
-            first, which contains table headers):*/
-            for (i = 1; i < (rows.length - 1); i++) {
-                    
-                //start by saying there should be no switching:
-                shouldSwitch = false;
-
-                /*Get the two elements you want to compare,
-                one from current row and one from the next:*/
-                x = rows[i].getElementsByTagName("TD")[n];
-                y = rows[i + 1].getElementsByTagName("TD")[n];
-
-                /*check if the two rows should switch place,
-                based on the direction, asc or desc:*/
-                if (dir == "asc") {
-                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                        //if so, mark as a switch and break the loop:
-                        shouldSwitch= true;
-                        break;
-                    }
-                } 
-                else if (dir == "desc") {
-                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                        //if so, mark as a switch and break the loop:
-                        shouldSwitch = true;
-                        break;
-                    }
-                }
-            }
-            if (shouldSwitch) {
-                /*If a switch has been marked, make the switch
-                and mark that a switch has been done:*/
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
-                //Each time a switch is done, increase this count by 1:
-                switchcount ++;      
-            } 
-            else {
-            /*If no switching has been done AND the direction is "asc",
-            set the direction to "desc" and run the while loop again.*/
-                if (switchcount == 0 && dir == "asc") {
-                    dir = "desc";
-                    switching = true;
-                }
-            }
-        }
-    }
-</script>
+    <script src="../js/tableFunc.js"></script>
 
 </body>
 

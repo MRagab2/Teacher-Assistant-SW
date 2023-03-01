@@ -1,27 +1,20 @@
 <?php
+require_once '../models/user/assistant.php';
 
-require_once '../models/assisData.php';
-require_once '../controllers/assisController.php';
-$errMsg="";
-$assisController = new AssisController;
-$assisAll = $assisController->viewAllAssistantData();
+$assistant = new Assistant;
 
-if (isset($_POST['name']) && isset($_POST['location']) && isset($_POST['num1'])){
-    if (!empty($_POST['name']) && !empty($_POST['location']) && !empty($_POST['num1'])){
-        $assis = new AssisData;
+if (isset($_POST['name']) && isset($_POST['id']))
+{
+    $assistant->full_name = $_POST['name'];
+    $assistant->id        = $_POST['id'];
+    $assistant->phone_no  = $_POST['phone'];
 
-        $assis->name        = $_POST['name'];
-        $assis->id          = $_POST['id'];
-        $assis->location    = $_POST['location'];
-        $assis->num1        = $_POST['num1'];
-        $assis->num2        = $_POST['num2'];
-        $assis->facebookAcc = $_POST['faceAcc'];
-
-        if($assisController->newAssistantData($assis)){
-            header("location: Assistant Data.php");
-        }
-    }
+    if($assistant->new_Assistant())
+        header("location: Assistant Data.php");
 }
+
+$all_assistant = $assistant->view_All_Assistant();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -62,19 +55,20 @@ if (isset($_POST['name']) && isset($_POST['location']) && isset($_POST['num1']))
                                 <h1 class="h4 text-gray-900 mb-4">New Assistant !</h1>
                             </div>
                             <form action="Assistant Data Add.php" method="POST" class="user">
+                                <div class="form-group">
+                                    <input type="text" class="form-control form-control-user" id="name" name="name" required
+                                        placeholder="Assistant Name">
+                                </div>
+
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <input type="text" class="form-control form-control-user" id="name" name="name" required
-                                            placeholder="Name">
-                                    </div>
-                                    <div class="col-sm-6">
                                         <select  style="border-radius: 25px; width:inherit; height:45px; padding: 10px;" id="id" name="id" required>
                                             <option value="">ID..</option>
                                             <?php 
-                                            for($i = 1 ; $i<1000 ; $i++){
+                                            for($i = 1 ; $i<99 ; $i++){
                                                 $con = 0;
-                                                foreach($assisAll as $aAll){
-                                                    if($aAll['id'] == $i){
+                                                foreach($all_assistant as $ass){
+                                                    if($ass['id'] == $i){
                                                         $con = 1;
                                                     }
                                                 }
@@ -90,28 +84,12 @@ if (isset($_POST['name']) && isset($_POST['location']) && isset($_POST['num1']))
                                             ?>
                                         </select>
                                     </div>
-                                </div>
-                                <div class="form-group row">
-                                    <div class="col-sm-6 mb-3 mb-sm-0">
-                                    <input type="text" class="form-control form-control-user" id="location" name="location" required
-                                            placeholder="Address">
-                                    </div>
+
                                     <div class="col-sm-6">
                                     <input type="text" class="form-control form-control-user" required
-                                            id="num1" name="num1" placeholder="Num.1">
+                                            id="phone" name="phone" placeholder="Phone Num">
                                     </div>
                                 </div>
-                                <div class="form-group row">
-                                    <div class="col-sm-6 mb-3 mb-sm-0">
-                                    <input type="text" class="form-control form-control-user"
-                                            id="num2" name="num2" placeholder="Num.2">
-                                    </div>
-                                    <div class="col-sm-6">
-                                    <input type="text" class="form-control form-control-user" id="faceAcc" name="faceAcc"
-                                        placeholder="FaceBook Link">
-                                    </div>
-                                </div>
-                                
                                 
                                 <button type="submit" class="btn btn-success btn-user btn-block">
                                     New Assistant

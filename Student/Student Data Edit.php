@@ -2,16 +2,13 @@
 
 require_once '../models/user/student.php';
 session_start();
-echo $_SESSION['year'];
-echo $_SESSION['center'];
-echo $_SESSION['grade_type'];
-echo $_SESSION['student_id'];
 
 $stOld = new Student;
 $stNew = new Student;
 
-$stOld->id = $_SESSION['student_id'];
+$_SESSION['student_id'] = $_GET['student_id'] ? $_GET['student_id'] : '';
 
+$stOld->id = $_SESSION['student_id'];
 
 $student_data = $stOld->view_1_Student();
 
@@ -34,7 +31,7 @@ if(isset($_POST['student_name']) && isset($_POST['student_id'])){
         $stNew->school      = $_POST['school'];
 
         $stOld->update_Student($stNew);
-        header("location: Data.php");
+        header("location: Student Data.php");
     }
 }
 
@@ -79,7 +76,7 @@ $all_student = $stOld->view_All_Student();
                             <div class="text-center">
                                 <h1 class="h4 text-gray-900 mb-4">Edit Student Data</h1>
                             </div>
-                            <form method="POST" action="Data Edit.php" class="user">
+                            <form method="POST" action="Student Data Edit.php" class="user">
                                 
                                 <div class="form-group ">
                                     <input type="text" class="form-control form-control-user" id="student_name" name="student_name"
@@ -95,7 +92,7 @@ $all_student = $stOld->view_All_Student();
                                                     foreach($all_student as $one_id){
                                                         if($one_id['id'] == $i){
                                                             if($stOld->id == $i){
-                                                                $conn =1;
+                                                                $conn = 1;
                                                             }
                                                             else{
                                                                 $conn = 2;
@@ -150,7 +147,7 @@ $all_student = $stOld->view_All_Student();
                                     Save
                                 </button>
                                 <hr>
-                                <a href="Data.php" class="btn btn-google btn-user btn-block">
+                                <a href="Student Data.php" class="btn btn-google btn-user btn-block">
                                     Cancel
                                 </a>
                             </form>

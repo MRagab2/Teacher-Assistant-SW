@@ -4,9 +4,8 @@ session_start();
 
 $student = new Student;
 
-
-if(isset($_POST['name']) && isset($_POST['id'])){
-
+if(isset($_POST['name']) && isset($_POST['id']))
+{
     $student->full_name   = $_POST['name'];
     $student->id          = $_POST['id'];
     $student->year        = $_POST['year'];
@@ -16,10 +15,11 @@ if(isset($_POST['name']) && isset($_POST['id'])){
     $student->parent_no_2 = $_POST['parentNum2'];
     $student->school      = $_POST['school'];
     
-    if($student->new_Student()){
+    if($student->new_Student())
+    {
         $_SESSION['year']   = $_POST['year'];
         $_SESSION['center'] = $_POST['center'];
-        header("location: Data.php");
+        header("location: Student Data.php");
     }
 }
 
@@ -64,10 +64,10 @@ $all_student = $student->view_All_Student();
                             <div class="text-center">
                                 <h1 class="h4 text-gray-900 mb-4">Add New Student !</h1>
                             </div>
-                            <form class="user "action="Data Add.php" method="POST">
+                            <form class="user "action="Student Data Add.php" method="POST">
                                 <div class="form-group ">
                                     <input type="text" class="form-control form-control-user" id="name" name="name" required
-                                        placeholder="Full Name">
+                                        placeholder="Student Name">
                                 </div>
                                 
                                 <div class="form-group row">
@@ -135,7 +135,7 @@ $all_student = $student->view_All_Student();
                                     Add Student
                                 </button>
                                 <hr>
-                                <a href="Data.php" class="btn btn-google btn-user btn-block">
+                                <a href="Student Data.php" class="btn btn-google btn-user btn-block">
                                         Cancel
                                 </a>
                             </form>

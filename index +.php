@@ -214,7 +214,7 @@ $studentM = $studentController->viewAllStudentDataMayo();
             </li>
             <!-- Nav Item - Tables -->
             <li class="nav-item ">
-                <a class="nav-link" href="assistant/Assistant Availability.php">
+                <a class="nav-link" href="assistant/Availability.php">
                     <i class="far fa-calendar-alt"></i>
                     <span>Assistants Availability</span></a>
             </li>

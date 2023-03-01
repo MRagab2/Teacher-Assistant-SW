@@ -1,35 +1,34 @@
 <?php
 
-require_once '../models/assisData.php';
-require_once '../controllers/assisController.php';
-$errMsg="";
+require_once '../models/user/assistant.php';
+session_start();
 
-$assisController = new AssisController;
-$a = new AssisData;
-$aNew = new AssisData;
-$assisAll = $assisController->viewAllAssistantData();
+$assOld = new Assistant;
+$assNew = new Assistant;
 
-$a->id = $_GET['assisID'];
-$assis = $assisController->viewAssistantData($a);
+$_SESSION['assistant_id'] = $_GET['assistant_id'] ? $_GET['assistant_id'] : '';
 
-if (isset($_POST['name']) && isset($_POST['location']) && isset($_POST['num1'])){
-    if(!empty($_POST['name']) && !empty($_POST['location']) && !empty($_POST['num1'])){
-        $a->name = $assis['name'];
-        
-        $aNew->name        = $_POST['name'];
-        $aNew->id          = $_POST['id'];
-        $aNew->location    = $_POST['location'];
-        $aNew->num1        = $_POST['num1'];
-        $aNew->num2        = $_POST['num2'];
-        $aNew->facebookAcc = $_POST['faceAcc'];
+$assOld->id = $_SESSION['assistant_id'];
 
-        if($assisController->editAssistantData($a,$aNew)){
-            //if($assisController->newAssistantData($aNew)){
-                header("location: Assistant Data.php");
-            //}
-        }
+$assistant_data = $assOld->view_1_Assistant();
+
+$assOld->full_name = $assistant_data['name'];
+$assOld->phone_no  = $assistant_data['phone'];
+
+if (isset($_POST['assistant_name']) && isset($_POST['assistant_id']))
+{
+    if(!empty($_POST['assistant_name']) && !empty($_POST['assistant_id']))
+    {        
+        $assNew->full_name = $_POST['assistant_name'];
+        $assNew->id        = $_POST['assistant_id'];
+        $assNew->phone_no  = $_POST['phone_num'];
+
+        $assOld->update_Assistant($assNew);
+        header("location: Assistant Data.php");
     }
 }
+
+$all_assistant = $assOld->view_All_Assistant();
 
 ?>
 
@@ -72,29 +71,30 @@ if (isset($_POST['name']) && isset($_POST['location']) && isset($_POST['num1']))
                                 <h1 class="h4 text-gray-900 mb-4">Edit Assistant </h1>
                             </div>
 
-                            <form class="user" action="Assistant Data Edit.php?assisID=<?= $assis['id']?>" method="POST">
+                            <form class="user" action="Assistant Data Edit.php" method="POST">
+                                <div class="form-group">
+                                        <input type="text" class="form-control form-control-user" id="assistant_name" name="assistant_name"
+                                            placeholder="Name" value="<?= $assOld->full_name ?>" required>                                    
+                                </div>
+
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <input type="text" class="form-control form-control-user" id="name" name="name"
-                                            placeholder="Name" value="<?= $assis['name'] ?>" required>
-                                    </div>
-                                    <div class="col-sm-6">
-                                    <select  style="border-radius: 25px; width:inherit; height:45px; padding: 10px;" id="id" name="id" required>
+                                        <select  style="border-radius: 25px; width:inherit; height:45px; padding: 10px;" id="assistant_id" name="assistant_id" required>
                                             <option value="">ID..</option>
                                             <?php 
-                                            for($i=1;$i<1000;$i++){
-                                                $con = 0;
-                                                foreach($assisAll as $stAll){
-                                                    if($stAll['id'] == $i){
-                                                        if($assis['id'] == $i){
-                                                            $con =1;
+                                            for($i=1;$i<99;$i++){
+                                                $conn = 0;
+                                                foreach($all_assistant as $one_id){
+                                                    if($one_id['id'] == $i){
+                                                        if($assOld->id == $i){
+                                                            $conn = 1;
                                                         }
                                                         else{
-                                                            $con = 2;
+                                                            $conn = 2;
                                                         }
                                                     }
                                                 }
-                                                switch($con){
+                                                switch($conn){
                                                     case 1:
                                                     ?>
                                                         <option selected><?= $i ?></option>
@@ -113,29 +113,10 @@ if (isset($_POST['name']) && isset($_POST['location']) && isset($_POST['num1']))
                                         ?>
                                         </select>
                                     </div>
-                                </div>
-                                <div class="form-group row">
-                                    <div class="col-sm-6 mb-3 mb-sm-0">
-                                    <input type="text" class="form-control form-control-user" id="location" name="location"
-                                            placeholder="Location" value="<?= $assis['location'] ?>" required>
-                                    </div>
                                     <div class="col-sm-6">
-                                    <input type="text" class="form-control form-control-user"
-                                            id="num1" name="num1" placeholder="Num.1" value="<?= $assis['num1'] ?>" required>
+                                        <input type="text" class="form-control form-control-user"
+                                            id="phone_num" name="phone_num" placeholder="Phone Num" value="<?= $assOld->phone_no ?>" required>
                                     </div>
-                                </div>
-                                <div class="form-group row">
-                                    <div class="col-sm-6 mb-3 mb-sm-0">
-                                    <input type="text" class="form-control form-control-user"
-                                            id="num2" name="num2" placeholder="Num.2" value="<?= $assis['num2'] ?>">
-                                    </div>
-                                    <div class="col-sm-6">
-                                    <input type="text" class="form-control form-control-user" id="faceAcc" name="faceAcc"
-                                        placeholder="FaceBook Link" value="<?= $assis['facebook acc'] ?>">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    
                                 </div>
                                 
                                 <button type="submit" class="btn btn-success btn-user btn-block">

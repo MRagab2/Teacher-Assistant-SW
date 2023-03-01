@@ -1,5 +1,4 @@
 <?php
-require_once 'student.php';
 require_once  __DIR__ . '/../db_controller.php';
 
 

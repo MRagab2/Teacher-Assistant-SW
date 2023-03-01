@@ -2,56 +2,59 @@
 
 require_once '../models/user/student.php';
 session_start();
-echo $_SESSION['year'];
-echo $_SESSION['center'];
-echo $_SESSION['grade_type'];
 
 $student = new Student;
 
-if(isset($_GET['class_filter'])){
-    $_SESSION['year'] = $_GET['class_filter'];
-}
-if(isset($_GET['center_filter'])){
-    $_SESSION['center'] = $_GET['center_filter'];
-}
+//Filters
+    if(isset($_GET['class_filter'])){
+        $_SESSION['year'] = $_GET['class_filter'];
+    }
 
-if(isset($_SESSION['year'])){
-    if($_SESSION['year'] == '2nd_math' || $_SESSION['year'] == '2nd_mech')
-        $_SESSION['year'] = '2nd';
-    $student->year = $_SESSION['year'];
-}
-if(isset($_SESSION['center'])){
-    if($student->year == '3rd' && $_SESSION['center'] =='Mayo')
-        $_SESSION['center'] = 'Helwan';
+    if(isset($_SESSION['year'])){
+        if($_SESSION['year'] == '2nd_math' || $_SESSION['year'] == '2nd_mech')
+            $_SESSION['year'] = '2nd';
+        $student->year = $_SESSION['year'];
+    }
 
-    $student->center = $_SESSION['center'];
-}
+    if(isset($_GET['center_filter'])){
+        $_SESSION['center'] = $_GET['center_filter'];
+    }    
+    if(isset($_SESSION['center'])){
+        if($student->year == '3rd' && $_SESSION['center'] =='Mayo')
+            $_SESSION['center'] = 'Helwan';
 
-if(isset($_POST["del"])){
-    if($_GET['DEL']==2){
-        if(!empty($_POST["stuID"])){
+        $student->center = $_SESSION['center'];
+    }
+
+if(isset($_POST["del"]))
+{
+    if($_GET['DEL']==2)
+    {
+        if(!empty($_POST["stuID"]))
+        {
             $student->id = $_POST["stuID"];            
 
-            if($student->delete_Student()){
-                if($student->center){
+            if($student->delete_Student())
+            {
+                if($student->center)
                     $student_result = $student->view_All_Student_Center_Class();
-                }
-                else{
+                
+                else
                     $student_result = $student->view_All_Student_Class();
-                }  
-                header('location: Data.php');
+                 
+                header('location: Student Data.php');
             }
         }
         $_GET['DEL'] = 0;
     }
 }
 
-if($student->center){
+if($student->center)
     $student_result = $student->view_All_Student_Center_Class();
-}
-else{
+
+else
     $student_result = $student->view_All_Student_Class();
-}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -239,13 +242,13 @@ else{
         
             <!-- Nav Item - Tables -->
             <li class="nav-item ">
-                <a class="nav-link" href="../assistant/Assistant Data.php">
+                <a class="nav-link" href="../assistant/Assistant Student Data.php">
                     <i class="fa fa-users"></i>
                     <span>Assistants Data</span></a>
             </li>
             <!-- Nav Item - Tables -->
             <li class="nav-item ">
-                <a class="nav-link" href="../assistant/Assistant Availability.php">
+                <a class="nav-link" href="../assistant/Availability.php">
                     <i class="far fa-calendar-alt"></i>
                     <span>Assistants Availability</span></a>
             </li>
@@ -283,9 +286,9 @@ else{
                             </button>
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                 <a class="dropdown-item" href="#">Class</a>
-                                <a class="dropdown-item <?= $_SESSION['year']=='3rd' ? 'active': '' ?>" href="Data.php?class_filter=3rd">3rd</a>
-                                <a class="dropdown-item <?= $_SESSION['year']=='2nd' ? 'active': '' ?>" href="Data.php?class_filter=2nd">2nd</a>
-                                <a class="dropdown-item <?= $_SESSION['year']=='1st' ? 'active': '' ?>" href="Data.php?class_filter=1st">1st</a>
+                                <a class="dropdown-item <?= $_SESSION['year']=='3rd' ? 'active': '' ?>" href="Student Data.php?class_filter=3rd">3rd</a>
+                                <a class="dropdown-item <?= $_SESSION['year']=='2nd' ? 'active': '' ?>" href="Student Data.php?class_filter=2nd">2nd</a>
+                                <a class="dropdown-item <?= $_SESSION['year']=='1st' ? 'active': '' ?>" href="Student Data.php?class_filter=1st">1st</a>
                             </div>
                         </div>
                         <div class="btn-group" style="padding-left: 20px;">
@@ -293,7 +296,7 @@ else{
                                 Data
                             </button>
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item active" href="Data.php">Data</a>
+                                <a class="dropdown-item active" href="Student Data.php">Data</a>
                                 <a class="dropdown-item" href="Grades.php?grade_filter=attendance">Attendance</a>
                                 <a class="dropdown-item" href="Grades.php?grade_filter=quiz_grade">Quizzes</a>
                                 <a class="dropdown-item" href="Grades.php?grade_filter=hw_grade">Homewok</a>
@@ -305,9 +308,9 @@ else{
                                 <?= $_SESSION['center'] ? $_SESSION['center'] : 'Center'  ?>
                             </button>
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item <?= !$_SESSION['center'] ? 'active': '' ?>" href="Data.php?center_filter=">Center</a>
-                                <a class="dropdown-item <?= $_SESSION['center']=='Helwan' ? 'active': '' ?>" href="Data.php?center_filter=Helwan">Helwan</a>
-                                <a class="dropdown-item <?= $_SESSION['center']=='Mayo' ? 'active': '' ?>" href="Data.php?center_filter=Mayo">Mayo</a>
+                            <a class="dropdown-item <?= !$_SESSION['center'] ? 'active': '' ?>" href="Student Data.php?center_filter=">Center</a>
+                                <a class="dropdown-item <?= $_SESSION['center']=='Helwan' ? 'active': '' ?>" href="Student Data.php?center_filter=Helwan">Helwan</a>
+                                <a class="dropdown-item <?= $_SESSION['center']=='Mayo' ? 'active': '' ?>" href="Student Data.php?center_filter=Mayo">Mayo</a>
                             </div>
                         </div>
                     </div>
@@ -322,7 +325,7 @@ else{
                         <div class="card-header py-3">
                             <div class="d-sm-flex align-items-center justify-content-between mb-4">
                                 <h6 class="m-0 font-weight-bold text-primary"><?= $_SESSION['year']; ?> Sec Data <?= $_SESSION['center'] ? '('.$_SESSION['center'].')' : ''; ?></h6>
-                                    <a href="Data Add.php" class="btn btn-primary btn-icon-split"><span class="icon text-white"><i class="fa fa-user-plus"></i>
+                                    <a href="Student Data Add.php" class="btn btn-primary btn-icon-split"><span class="icon text-white"><i class="fa fa-user-plus"></i>
                                     </span><span class="text"> New Student</a>
                             </div>
                         </div>
@@ -368,8 +371,8 @@ else{
                                                 <td><?= $st['center'] ?></td>
                                                 <?php } ?>
                                                 <td>
-                                                    <form action="Data Edit.php" method="GET">
-                                                        <input type="hidden" name="student_id" value= "<?php $_SESSION['student_id'] = $st['id'] ; echo$_SESSION['student_id']?>">
+                                                    <form action="Student Data Edit.php" method="GET">
+                                                        <input type="hidden" name="student_id" value= "<?= $st['id'] ?>">
                                                         <button type="submit" name="" class="btn btn-info btn-user btn-block" ><i class="fas fa-user-edit"></i></button>
                                                     </form>
                                                     <hr>
@@ -378,7 +381,7 @@ else{
                                                     if(isset($_GET['DEL'])){
                                                         if($_GET['DEL']==1){
                                                     ?>
-                                                    <form action="Data.php?DEL=2" method="POST" >                                                        
+                                                    <form action="Student Data.php?DEL=2" method="POST" >                                                        
                                                         <input type="hidden" name="stuID" value= "<?= $st['id']?>">
                                                         <button type="submit" name="del" class="btn btn-google btn-user btn-block" ><i class="fas fa-trash-alt"></i></button>
                                                     </form>
@@ -386,7 +389,7 @@ else{
                                                         }
                                                         else{
                                                             ?>
-                                                            <form action="Data.php?DEL=1" method="POST" >
+                                                            <form action="Student Data.php?DEL=1" method="POST" >
                                                                 <input type="hidden" name="stuID" value= "<?= $st['id']?>">
                                                                 <button type="submit" name="del" class="btn btn-google btn-user btn-block" ><i class="fas fa-trash-alt"></i></button>
                                                             </form>
@@ -395,7 +398,7 @@ else{
                                                     }
                                                     else{
                                                     ?>
-                                                        <form action="Data.php?DEL=1" method="POST" >
+                                                        <form action="Student Data.php?DEL=1" method="POST" >
                                                             <input type="hidden" name="stuID" value= "<?= $st['id']?>">
                                                             <button type="submit" name="del" class="btn btn-google btn-user btn-block" ><i class="fas fa-trash-alt"></i></button>
                                                         </form>

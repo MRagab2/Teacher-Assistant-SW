@@ -4,7 +4,7 @@ require_once "user.php";
 
 
 class Assistant extends User{
-    public $admin =0;
+    public $admin;
     public $availability = array("sat"=>0, 
                         "sun"=>0,"mon"=>0,
                         "tue"=>0,"wed"=>0,
@@ -24,6 +24,7 @@ class Assistant extends User{
 
         $this->query("INSERT INTO `availability` 
                     VALUES (".$this->id."
+                    ,'".$this->full_name."'
                     ,'".$this->availability["sat"]."'
                     ,'".$this->availability["sun"]."'
                     ,'".$this->availability["mon"]."'
@@ -31,6 +32,8 @@ class Assistant extends User{
                     ,'".$this->availability["wed"]."'
                     ,'".$this->availability["thu"]."'
                     ,'".$this->availability["fri"]."')");
+        
+        return $this->view_1_Assistant();
     }
 
     //View Data T
@@ -73,7 +76,7 @@ class Assistant extends User{
 
     public function view_1_Availability(){
         $this->select("`availability`","`assistant_id` = ".$this->id);
-        return $this->fetchAll();
+        return $this->fetch();
     }
 
     //Edit Avilability T
