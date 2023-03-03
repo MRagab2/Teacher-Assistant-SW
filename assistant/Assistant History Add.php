@@ -1,14 +1,14 @@
 <?php
 
-require_once '../models/assisData.php';
-require_once '../controllers/assisController.php';
+require_once '../models/user/assistant.php';
+session_start();
 
-$a = new AssisData;
-$assisController = new AssisController;
-$assis = $assisController->viewAllAssistantData();
+$assistant = new Assistant;
 
-if (isset($_POST['date']) && isset($_POST['class']) && isset($_POST['assis1'])){
-    if (!empty($_POST['date']) && !empty($_POST['class']) && !empty($_POST['assis1'])){
+
+
+if (isset($_POST['date']) && isset($_POST['class']) && isset($_POST['center'])){
+    if (!empty($_POST['date']) && !empty($_POST['class']) && !empty($_POST['center'])){
         $ah = new AssisHitory;
         $signUp = new AssisController;
 
@@ -26,6 +26,7 @@ if (isset($_POST['date']) && isset($_POST['class']) && isset($_POST['assis1'])){
         }
     }
 }
+$assis = $assisController->viewAllAssistantData();
 ?>
 <!DOCTYPE html>
 <html lang="en">

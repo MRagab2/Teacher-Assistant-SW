@@ -4,6 +4,25 @@ require_once '../models/user/student.php';
 require_once '../models/work/student_work.php';
 session_start();
 
+if(isset($_GET['goto']))
+{
+    switch ($_GET['goto']) {
+        case 'attendance':
+            $_SESSION['grade_type'] = 'attendance';
+            break;
+        case 'quiz':
+            $_SESSION['grade_type'] = 'quiz_grade';
+            break;
+        case 'hw':
+            $_SESSION['grade_type'] = 'hw_grade';
+            break;
+        case 'exam':
+            $_SESSION['grade_type'] = 'exam_grade';
+            break;
+    }
+    header('location: Grades.php');
+}
+
 $student_grade = new Student_Work();
 $student = new Student();
 
@@ -110,118 +129,34 @@ if($student_result){
                 Students
             </div>
 
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item active">
-                <a class="nav-link " href="#" data-toggle="collapse" data-target="#collapse3rd"
-                    aria-expanded="true" aria-controls="collapse3rd">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>3rd sec</span>
-                </a>
-                <div id="collapse3rd" class="collapse show" aria-labelledby="heading3rd" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item"        href="3rd Data.php">Data</a>
-                        <a class="collapse-item"        href="3rd Quizzes.php">Quizzes</a>
-                        <a class="collapse-item"        href="3rd HW.php">HomeWork</a>
-                        <a class="collapse-item active" href="3rd Attendance.php">Attendance</a>
-                        <a class="collapse-item"        href="3rd Exams.php">Exams</a>
-                        <!-- <a class="collapse-item"        href="">Notes</a> -->
-                    </div>
-                </div>
+            <li class="nav-item">
+                <a class="nav-link" href="../Student/Student Data.php">
+                    <i class="fa fa-users"></i>
+                    <span>Student Data</span></a>
             </li>
 
-            <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapse2ndH"
-                    aria-expanded="true" aria-controls="collapse2ndH">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>2nd Sec (Helwan)</span>
-                </a>
-                <div id="collapse2ndH" class="collapse" aria-labelledby="heading2ndH" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-
-                        <a class="collapse-item" href="../2nd/2nd Data.php?place=Helwan">Data</a>
-
-                        <h6 class="collapse-header">Mathematics</h6>
-                        <a class="collapse-item" href="../2nd math/2nd Math Quizzes.php?place=Helwan">Quizzes</a>
-                        <a class="collapse-item" href="../2nd math/2nd Math HW.php?place=Helwan">HomeWork</a>
-                        <a class="collapse-item" href="../2nd math/2nd Math Attendance.php?place=Helwan">Attendance</a>
-                        <a class="collapse-item" href="../2nd math/2nd Math Exams.php?place=Helwan">Exams</a>
-
-                        <div class="collapse-divider"></div>
-
-                        <h6 class="collapse-header">Mechanics</h6>
-                        <a class="collapse-item" href="../2nd mech/2nd Mech Quizzes.php?place=Helwan">Quizzes</a>
-                        <a class="collapse-item" href="../2nd mech/2nd Mech HW.php?place=Helwan">HomeWork</a>
-                        <a class="collapse-item" href="../2nd mech/2nd Mech Attendance.php?place=Helwan">Attendance</a>
-                        <a class="collapse-item" href="../2nd mech/2nd Mech Exams.php?place=Helwan">Exams</a>
-                    </div>
-                </div>
+                <a class="nav-link" href="?goto=attendance">
+                    <i class="fa fa-users"></i>
+                    <span>Student Attendance</span></a>
             </li>
 
-            <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapse2ndM"
-                    aria-expanded="true" aria-controls="collapse2ndM">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>2nd Sec (Mayo)</span>
-                </a>
-                <div id="collapse2ndM" class="collapse" aria-labelledby="heading2ndM" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-
-                        <a class="collapse-item" href="../2nd/2nd Data.php?place=Mayo">Data</a>
-
-                        <h6 class="collapse-header">Mathematics</h6>
-                        <a class="collapse-item" href="../2nd math/2nd Math Quizzes.php?place=Mayo">Quizzes</a>
-                        <a class="collapse-item" href="../2nd math/2nd Math HW.php?place=Mayo">HomeWork</a>
-                        <a class="collapse-item" href="../2nd math/2nd Math Attendance.php?place=Mayo">Attendance</a>
-                        <a class="collapse-item" href="../2nd math/2nd Math Exams.php?place=Mayo">Exams</a>
-
-                        <div class="collapse-divider"></div>
-
-                        <h6 class="collapse-header">Mechanics</h6>
-                        <a class="collapse-item" href="../2nd mech/2nd Mech Quizzes.php?place=Mayo">Quizzes</a>
-                        <a class="collapse-item" href="../2nd mech/2nd Mech HW.php?place=Mayo">HomeWork</a>
-                        <a class="collapse-item" href="../2nd mech/2nd Mech Attendance.php?place=Mayo">Attendance</a>
-                        <a class="collapse-item" href="../2nd mech/2nd Mech Exams.php?place=Mayo">Exams</a>
-                    </div>
-                </div>
-            </li>
-            
-
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapse1stH"
-                    aria-expanded="true" aria-controls="collapse1stH">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>1st sec (Helwan)</span>
-                </a>
-                <div id="collapse1stH" class="collapse" aria-labelledby="heading1stH" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="../1st/1st Data.php?place=Helwan">Data</a>
-                        <a class="collapse-item" href="../1st/1st Quizzes.php?place=Helwan">Quizzes</a>
-                        <a class="collapse-item" href="../1st/1st HW.php?place=Helwan">HomeWork</a>
-                        <a class="collapse-item" href="../1st/1st Attendance.php?place=Helwan">Attendance</a>
-                        <a class="collapse-item" href="../1st/1st Exams.php?place=Helwan">Exams</a>
-                    </div>
-                </div>
+                <a class="nav-link" href="?goto=quiz">
+                    <i class="fa fa-users"></i>
+                    <span>Student Quizzes</span></a>
             </li>
 
-            <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapse1stM"
-                    aria-expanded="true" aria-controls="collapse1stM">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>1st sec (Mayo)</span>
-                </a>
-                <div id="collapse1stM" class="collapse" aria-labelledby="heading1stM" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="../1st/1st Data.php?place=Mayo">Data</a>
-                        <a class="collapse-item" href="../1st/1st Quizzes.php?place=Mayo">Quizzes</a>
-                        <a class="collapse-item" href="../1st/1st HW.php?place=Mayo">HomeWork</a>
-                        <a class="collapse-item" href="../1st/1st Attendance.php?place=Mayo">Attendance</a>
-                        <a class="collapse-item" href="../1st/1st Exams.php?place=Mayo">Exams</a>
-                    </div>
-                </div>
+                <a class="nav-link" href="?goto=hw">
+                    <i class="fa fa-users"></i>
+                    <span>Student HomeWorks</span></a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="?goto=exam">
+                    <i class="fa fa-users"></i>
+                    <span>Student Exams</span></a>
             </li>
 
             <!-- Divider -->

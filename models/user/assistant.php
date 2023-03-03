@@ -106,5 +106,11 @@ class Assistant extends User{
         return $this->fetchAll();
     }
 
+    //View History T
+    public function view_All_assistant_history(){
+        $this->select("`assistant_history`");
+
+        return $this->fetchAll();
+    }
 }
 ?>
